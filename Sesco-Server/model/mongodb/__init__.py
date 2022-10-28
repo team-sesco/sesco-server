@@ -6,10 +6,10 @@ from .log import Log
 from .master_config import MasterConfig
 from .user import User
 from .post import Post
-
+from .detection import Detection
 
 MODELS = [
-    Log, MasterConfig, User, Post
+    Log, MasterConfig, User, Post, Detection
 ]
 
 
