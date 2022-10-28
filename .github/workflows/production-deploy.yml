@@ -3,7 +3,7 @@ name: SESCO Production Deployment
 on:
   push:
     branches:
-      - develop
+      - main
 
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
