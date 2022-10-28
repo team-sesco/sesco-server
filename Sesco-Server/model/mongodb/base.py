@@ -33,6 +33,3 @@ class Model(metaclass=ABCMeta):
     def schemize(self, document: dict) -> dict:
         """Generate JSON scheme"""
         return {**self.schema, **document}
-
-    def insert_user(self, document: dict):
-        self.col.insert_one(self.schemize(document))

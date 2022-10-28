@@ -12,7 +12,7 @@ from config import config
 from . import api_auth as api
 
 
-@api.route('/signin', methods=['POST'])
+@api.post('/signin')
 @Validator(bad_request)
 def auth_signin_api(
     id=Json(str, rules=MinLen(5)),
@@ -31,7 +31,7 @@ def auth_signin_api(
     })
 
 
-@api.route('/signup', methods=['POST'])
+@api.post('/signup')
 @Validator(bad_request)
 def auth_signup_api(
     id=Json(str, rules=MinLen(5)),
@@ -58,7 +58,7 @@ def auth_signup_api(
     })
 
 
-@api.route('/refresh')
+@api.get('/refresh')
 @jwt_required(refresh=True)
 def auth_token_refresh():
     """JWT 토큰 리프레시"""
@@ -69,7 +69,7 @@ def auth_token_refresh():
     })
 
 
-@api.route("/auth-test")
+@api.get("/auth-test")
 @jwt_required()
 @timer
 def auth_test_api():
@@ -77,7 +77,7 @@ def auth_test_api():
     return response_200("hello, %s" % get_jwt_identity())
 
 
-@api.route("/withdrawal", methods=['DELETE'])
+@api.delete("/withdrawal")
 @timer
 @login_required
 @Validator(bad_request)

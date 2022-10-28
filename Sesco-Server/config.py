@@ -17,8 +17,8 @@ class Config:
     API_LOGGING = False
     JSON_AS_ASCII = False
     JWT_TOKEN_LOCATION = ['headers']
-    JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 2
-    JWT_REFRESH_TOKEN_EXPIRES = 60 * 60 * 24 * 60
+    JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 365
+    JWT_REFRESH_TOKEN_EXPIRES = 60 * 60 * 24 * 365
     JWT_SESSION_COOKIE = False
     SECRET_KEY = "SESCO-SECRET-KEY"
 
@@ -53,15 +53,6 @@ elif FLASK_CONFIG == 'production':
         DEBUG = False
         TESTING = False
         SECRET_KEY = os.environ[APP_NAME + "_SECRET_KEY"]
-
-        # Apple Oauth
-        APPLE_OAUTH_TEAM_ID = os.environ["APPLE_OAUTH_TEAM_ID"]
-        APPLE_OAUTH_CLIENT_ID = os.environ["APPLE_OAUTH_CLIENT_ID"]
-        APPLE_OAUTH_REDIRECT_URI = os.environ["APPLE_OAUTH_REDIRECT_URI"]
-        APPLE_OAUTH_KEY_ID = os.environ["APPLE_OAUTH_KEY_ID"]
-        APPLE_OAUTH_PRIVATE_KEY = open(
-            os.environ['APPLE_OAUTH_PRIVATE_KEY'], 'rb'
-        ).read()
 
         # Kakao Oauth
         KAKAO_OAUTH_APP_ID = os.environ['KAKAO_OAUTH_APP_ID']

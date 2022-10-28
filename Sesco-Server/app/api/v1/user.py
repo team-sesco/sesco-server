@@ -1,6 +1,4 @@
 """User 관련 APIs"""
-import os
-from uuid import uuid4
 from flask import g, current_app
 from flask_validation_extended import Json, Route, File
 from flask_validation_extended import Validator, MinLen, Ext
@@ -12,11 +10,10 @@ from app.api.validation import ObjectIdValid
 from controller.util import remove_none_value
 from controller.file_util import upload_to_s3
 from model.mongodb import User
-from config import config
 from . import api_v1 as api
 
 
-@api.route("/users/me")
+@api.get("/users/me")
 @timer
 @login_required
 def api_v1_get_users_me():
@@ -26,7 +23,7 @@ def api_v1_get_users_me():
     )
 
 
-@api.route("/users/me", methods=['PUT'])
+@api.put("/users/me")
 @timer
 @login_required
 @Validator(bad_request)
@@ -42,7 +39,7 @@ def api_v1_update_users_me(
     return created
 
 
-@api.route("/users/me/photo", methods=['PUT'])
+@api.put("/users/me/photo")
 @timer
 @login_required
 @Validator(bad_request)
@@ -61,7 +58,7 @@ def api_v1_update_users_me_photo(
     return created
 
 
-@api.route("/users/<user_oid>", methods=['GET'])
+@api.get("/users/<user_oid>")
 @timer
 @login_required
 def api_v1_get_user(

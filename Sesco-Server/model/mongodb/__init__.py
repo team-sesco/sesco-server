@@ -5,10 +5,11 @@ from config import config
 from .log import Log
 from .master_config import MasterConfig
 from .user import User
+from .post import Post
 
 
 MODELS = [
-    Log, MasterConfig, User
+    Log, MasterConfig, User, Post
 ]
 
 
@@ -44,7 +45,7 @@ class ModelInitializer:
     @staticmethod
     def init_author(cur):
         """Insert Author config"""
-        MasterConfig(cur).insert_author('IML')
+        MasterConfig(cur).insert_author('SESCO')
 
     @staticmethod
     def init_hello(cur):

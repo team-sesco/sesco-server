@@ -32,3 +32,7 @@ def get_userinfo(access_token: str):
             "Authorization": "Bearer " + access_token
         },
     ).json()
+
+
+if __name__ == "__main__":
+    ...

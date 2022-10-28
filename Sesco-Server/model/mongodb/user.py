@@ -21,11 +21,12 @@ class User(Model):
             'id': None,
             'password': None,
             'name': None,
-            'photo': None,
+            'img': None,
             'auth_type': "origin",
             'last_access_date': datetime.now(),
             'firebase_token': None,
-            'product_bookmarks': [],
+            'is_deleted': False,
+            'bookmarks': [],
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -42,13 +43,6 @@ class User(Model):
             {'password': 1}
         )
 
-    def get_password_with_oauth(self, oauth_id: str):
-        """oauth_id를 통한 PW 조회 쿼리"""
-        return self.col.find_one(
-            {'oauth_id': oauth_id},
-            {'password': 1}
-        )
-
     def get_password(self, user_oid: ObjectId):
         """user_oid를 통한 PW 조회 쿼리"""
         return self.col.find_one(
@@ -59,17 +53,7 @@ class User(Model):
     def get_userinfo(self, user_oid: ObjectId):
         """user 정보 반환 쿼리"""
         return self.col.find_one(
-            {'_id': user_oid},
-            {
-                'id': 1,
-                'name': 1,
-                'photo': 1,
-                'introduction': 1,
-                'auth_type': 1,
-                'last_access_date': 1,
-                'ban_period': 1,
-                'created_at': 1
-            }
+            {'_id': user_oid}
         )
 
     def get_userinfo_simple(self, user_oid: ObjectId):
