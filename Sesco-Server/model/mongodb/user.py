@@ -86,3 +86,21 @@ class User(Model):
                 'updated_at': datetime.now()
             }}
         )
+         
+    def get_bookmarks(self, user_oid:ObjectId):
+        """북마크 반환"""
+        return (
+            self.col.find_one(
+                {'_id':user_oid},
+                {'bookmarks'}
+            )
+        )
+        
+    def update_bookmarks(self, user_oid:ObjectId, bookmarks_list:list):
+        """북마크 업데이트"""
+        self.col.update_one(
+            {'_id': user_oid},
+            {'$set':
+                {'bookmarks' : bookmarks_list}
+            }
+        )
