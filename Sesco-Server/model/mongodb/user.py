@@ -90,17 +90,22 @@ class User(Model):
     def get_bookmarks(self, user_oid:ObjectId):
         """북마크 반환"""
         return (
-            self.col.find_one(
+            list(self.col.find_one(
                 {'_id':user_oid},
                 {'bookmarks'}
             )
-        )
+        ))
         
     def update_bookmarks(self, user_oid:ObjectId, bookmarks_list:list):
         """북마크 업데이트"""
         self.col.update_one(
             {'_id': user_oid},
-            {'$set':
-                {'bookmarks' : bookmarks_list}
-            }
+            {'$set':{'bookmarks' : bookmarks_list}}
+        )
+    def upsert_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
+        """북마크 업설트"""
+        self.col.update_one(
+            {'_id':user_oid},
+            {'$push': {'detected_id': detection_oid}},
+            upsert=True
         )

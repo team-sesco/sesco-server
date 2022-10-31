@@ -21,10 +21,20 @@ def api_v1_get_bookmarks(
 ):
     """ 북마크 리스트 반환 API"""
     model = User(current_app.db)
-    return response_200(
-        model.get_bookmarks(ObjectId(g.user_oid), skip=skip, limit=limit)
-    )
 
+    return response_200(
+        model.get_bookmarks(
+            ObjectId(g.user_oid),
+            skip=skip,
+            limit=limit)
+    )
+"""
+COMMENT
+북마크 추가 단 API는 전체적으로 수정이 필요해보임 !
+쿼리로 간단하게 추가 가능한데, 너는 지금 기존 쿼리를 가져와서 리스트에 넣고 중복제거하고 다시 업데이트를 시키는 중 (앱단 처리 방식)
+
+최대한 쿼리로 해결하는 방식으로 다시 생각해보시길!
+"""
 @api.put('/bookmarks/<detection_id>')
 @timer
 @login_required
@@ -35,13 +45,10 @@ def api_v1_insert_bookmark(
     """ 북마크 추가 API"""
     model = User(current_app.db)
 
-    result = list(model.get_bookmarks(
-        ObjectId(g.user_oid)).get('bookmarks', []))
-    result.append(ObjectId(detection_id))
-    model.update_bookmarks(
+    
+    model.upsert_bookmarks(
         ObjectId(g.user_oid),
-        list(set(result)) # 중복 제거
-    )
+        ObjectId(detection_id))
 
     return created
 
@@ -55,8 +62,8 @@ def api_v1_delete_bookmark(
     """북마크 삭제 API"""
     model = User(current_app.db)
 
-    result = list(model.get_bookmarks(
-        ObjectId(g.user_oid)).get('bookmarks', []))
+    result = model.get_bookmarks(
+        ObjectId(g.user_oid)).get('bookmarks', [])
 
     if ObjectId(detection_id) in result:
         result.remove(ObjectId(detection_id))
