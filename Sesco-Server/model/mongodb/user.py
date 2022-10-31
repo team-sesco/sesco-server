@@ -88,24 +88,28 @@ class User(Model):
         )
          
     def get_bookmarks(self, user_oid:ObjectId):
-        """북마크 반환"""
-        return (
-            list(self.col.find_one(
+        """
+        북마크 반환
+        set([str(ObjectId), str(ObjectId), ...])
+        """
+        return list(map(str,(
+            self.col.find_one(
                 {'_id':user_oid},
                 {'bookmarks'}
-            )
-        ))
+        )).get('bookmarks', [])))
         
-    def update_bookmarks(self, user_oid:ObjectId, bookmarks_list:list):
-        """북마크 업데이트"""
-        self.col.update_one(
-            {'_id': user_oid},
-            {'$set':{'bookmarks' : bookmarks_list}}
-        )
     def upsert_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
         """북마크 업설트"""
         self.col.update_one(
             {'_id':user_oid},
-            {'$push': {'detected_id': detection_oid}},
+            {'$push': {'bookmarks': detection_oid}},
             upsert=True
         )
+
+    def delete_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
+        """북마크 삭제"""
+        result = self.col.update_one(
+            {'_id':user_oid},
+            {'$pull': {'bookmarks': detection_oid}}
+        )
+        return result
