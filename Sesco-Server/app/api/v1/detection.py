@@ -69,7 +69,7 @@ def api_v1_insert_detection(
     # name, category, location, result 담기
     search_str = None
 
-    detection_id = detection_model.insert_detection({
+    detection_model.insert_detection({
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
