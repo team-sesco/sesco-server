@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 from config import config
-
 # Collections
 from .log import Log
 from .master_config import MasterConfig
@@ -8,8 +7,9 @@ from .user import User
 from .post import Post
 from .detection import Detection
 from .help import Help
+from .report import Report
 MODELS = [
-    Log, MasterConfig, User, Post, Detection, Help
+    Log, MasterConfig, User, Post, Detection, Help, Report
 ]
 
 
