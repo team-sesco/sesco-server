@@ -7,9 +7,9 @@ from .master_config import MasterConfig
 from .user import User
 from .post import Post
 from .detection import Detection
-
+from .help import Help
 MODELS = [
-    Log, MasterConfig, User, Post, Detection
+    Log, MasterConfig, User, Post, Detection, Help
 ]
 
 
