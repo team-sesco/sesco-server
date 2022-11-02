@@ -8,8 +8,9 @@ from .post import Post
 from .detection import Detection
 from .help import Help
 from .report import Report
+from .notification import Notification
 MODELS = [
-    Log, MasterConfig, User, Post, Detection, Help, Report
+    Log, MasterConfig, User, Post, Detection, Help, Report, Notification
 ]
 
 
