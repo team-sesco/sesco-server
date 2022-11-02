@@ -56,3 +56,8 @@ class Detection(Model):
         return self.col.find_one(
             {'_id': detection_id},
         )
+    def get_search(self, search_str:str):
+        """
+        search_str이 정해지고나서 
+        """
+        pass

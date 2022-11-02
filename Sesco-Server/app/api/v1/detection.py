@@ -120,3 +120,18 @@ def api_v1_get_solution(
     return response_200(
         model.get_solution(disease)
     )
+
+
+@api.get("/search")
+@timer
+@login_required
+@Validator(bad_request)
+def api_v1_search(
+    search_str=Json(str, rules=MinLen(1))
+):
+    """통합 검색 API"""
+    model = Detection(current_app.db)
+
+    return response_200(
+        model.get_search(search_str)
+    )
