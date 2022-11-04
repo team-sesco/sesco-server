@@ -1,0 +1,35 @@
+name: SESCO Develop Deployment
+
+on:
+  push:
+    branches:
+      - develop
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_PW: ${{ secrets.DOCKERHUB_PW }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  CI:
+    name: Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ env.DOCKERHUB_USER }}
+        password: ${{ env.DOCKERHUB_PW }}
+    
+    - name: build and release to DockerHub
+      env:
+        NAME: ${{ env.DOCKERHUB_USER }}
+        REPO: sesco-server
+      run: |
+        cd ./Sesco-Server
+        docker build -t $REPO .
+        docker tag $REPO:latest $NAME/$REPO:latest
+        docker push $NAME/$REPO:latest
