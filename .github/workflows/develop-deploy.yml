@@ -8,12 +8,16 @@ env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_PW: ${{ secrets.DOCKERHUB_PW }}
   IMAGE_TAG: ${{ github.sha }}
+  DEV_SERVER_HOST: ${{ secrets.DEV_SERVER_HOST }}
+  DEV_SERVER_USERNAME: ${{ secrets.DEV_SERVER_USERNAME }}
+  DEV_SERVER_PASSWORD: ${{ secrets.DEV_SERVER_PASSWORD }}
+  DEV_SERVER_PORT: ${{ secrets.DEV_SERVER_PORT }}
 
 jobs:
   CI:
     name: Build
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -27,9 +31,21 @@ jobs:
     - name: build and release to DockerHub
       env:
         NAME: ${{ env.DOCKERHUB_USER }}
-        REPO: sesco-server
+        REPO: sesco-dev-server
       run: |
         cd ./Sesco-Server
         docker build -t $REPO .
         docker tag $REPO:latest $NAME/$REPO:latest
         docker push $NAME/$REPO:latest
+  CD:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy sesco-dev-server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.DEV_SERVER_HOST }}
+        username: ${{ env.DEV_SERVER_USERNAME }}
+        password: ${{ env.DEV_SERVER_PASSWORD }}
+        port: ${{ env.DEV_SERVER_PORT}}
