@@ -14,8 +14,8 @@ env:
   DEV_SERVER_PORT: ${{ secrets.DEV_SERVER_PORT }}
 
 jobs:
-  CI:
-    name: Build
+  build:
+    name: CI
     runs-on: ubuntu-latest
     
     steps:
@@ -37,8 +37,9 @@ jobs:
         docker build -t $REPO .
         docker tag $REPO:latest $NAME/$REPO:latest
         docker push $NAME/$REPO:latest
-  CD:
-    name: Deploy
+  deploy:
+    needs: build
+    name: CD
     runs-on: ubuntu-latest
 
     steps:
