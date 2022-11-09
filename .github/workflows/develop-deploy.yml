@@ -45,9 +45,6 @@ jobs:
     steps:
     - name: Pull image and restart service
       uses: appleboy/ssh-action@master
-      env:
-        NAME: ${{ env.DOCKERHUB_USER }}
-        REPO: sesco-dev-server
       with:
         host: ${{ env.DEV_SERVER_HOST }}
         username: ${{ env.DEV_SERVER_USERNAME }}
@@ -55,6 +52,6 @@ jobs:
         port: ${{ env.DEV_SERVER_PORT}}
         script: |
           cd ~/sesco_dev_server && \
-          docker pull $NAME/$REPO:latest && \
-          docker-compose rm -f $REPO && \
-          docker-compose up -d --no-deps $REPO
+          docker pull ${{ env.DOCKERHUB_USER }}/sesco-dev-server:latest && \
+          docker-compose rm -f sesco-server && \
+          docker-compose up -d --no-deps sesco-server
