@@ -36,6 +36,9 @@ class Config:
     ADMIN_ID = os.environ[APP_NAME + '_ADMIN_ID']
     ADMIN_PW = os.environ[APP_NAME + '_ADMIN_PW']
 
+    # AI
+    AI_HOST = os.environ[APP_NAME + '_AI_HOST']
+
     @staticmethod
     def init_app(app):
         pass

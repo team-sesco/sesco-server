@@ -7,6 +7,7 @@ from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
 from model.mongodb import User, Detection, MasterConfig
+from config import config
 from . import api_v1 as api
 
 @api.get("/detection")
@@ -56,7 +57,12 @@ def api_v1_insert_detection(
     detection_model = Detection(current_app.db)
     
     # TODO: AI 모델로부터 결과 받아오기
-    result = None # AI(img, category)
+    result = requests.post(
+        config.AI_HOST+'/predict',
+        data={
+            "category":category,
+            "img_url":img
+        }).json()
     
     # TODO: message
     message = None
