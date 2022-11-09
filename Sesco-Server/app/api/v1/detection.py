@@ -1,13 +1,15 @@
 import requests
 from io import BytesIO
 from bson import ObjectId
+from uuid import uuid4
 from flask import g, current_app
-from flask_validation_extended import Json, Route, Query
-from flask_validation_extended import Validator, MinLen
+from flask_validation_extended import Json, Route, Query, File
+from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
 from app.api.response import response_200, created, forbidden, no_content
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
+from controller.file_util import upload_to_s3
 from model.mongodb import User, Detection, MasterConfig
 from config import config
 from . import api_v1 as api
@@ -43,6 +45,29 @@ def api_v1_get_detection_one(
     )
 
 
+@api.post("/detection/photo")
+@timer
+@login_required
+@Validator(bad_request)
+def api_v1_post_detection_photo(
+    img: File = File(
+        rules=[
+            Ext(['.png', '.jpg', '.jpeg', '.gif']),
+            MaxFileCount(1)
+        ]
+    )
+):
+    """ 탐지 사진 업로드 API"""
+    return response_200(
+        upload_to_s3(
+            s3=current_app.s3,
+            file=img[0],
+            type="detection",
+            object_id=f"{g.user_oid}_{uuid4()}"
+        )
+    )
+
+
 @api.post('/detection')
 @timer
 @login_required
@@ -61,7 +86,9 @@ def api_v1_insert_detection(
     # TODO: AI 모델로부터 결과 받아오기
     response = requests.get(img)
     image = BytesIO(response.content)
+    current_app.models[category].load_model()
     result = current_app.models[category].predict(image)
+    return result
 
     print(f"result = {result}")
 

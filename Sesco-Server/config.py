@@ -27,7 +27,7 @@ class Config:
     MONGODB_NAME = os.environ[APP_NAME + "_MONGODB_NAME"]
 
     # S3
-    S3_PHOTO_DOMAIN = os.environ[APP_NAME + "S3_PHOTO_DOMAIN"]
+    S3_DOMAIN = os.environ[APP_NAME + "_S3_DOMAIN"]
     S3_BUCKET_NAME = os.environ[APP_NAME + "_S3_BUCKET_NAME"]
     S3_ACCESS_KEY_ID = os.environ[APP_NAME + "_S3_ACCESS_KEY_ID"]
     S3_SECRET_ACCESS_KEY = os.environ[APP_NAME + "_S3_SECRET_ACCESS_KEY"]

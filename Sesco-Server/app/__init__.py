@@ -50,7 +50,7 @@ def create_sesco_app(config):
         aws_access_key_id=config.S3_ACCESS_KEY_ID,
         aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
         bucket_name=config.S3_BUCKET_NAME,
-        bucket_domain=config.S3_PHOTO_DOMAIN,
+        bucket_domain=config.S3_DOMAIN,
     )
 
     # AI
@@ -61,7 +61,7 @@ def create_sesco_app(config):
             crop=value,
             device=device
         )
-        app.models[key].load_model()
+        # app.models[key].load_model()
 
     app.register_blueprint(error_bp)
     app.register_blueprint(template_bp)
