@@ -42,7 +42,7 @@ def resize_img(img: Image, width: int, height: int):
 
 def upload_to_s3(
     s3: S3Controller,
-    files: List[FileStorage],
+    file: FileStorage,
     type: str,
     object_id: str,
 ) -> str:
@@ -51,17 +51,14 @@ def upload_to_s3(
     저장 경로: {type-path}/{identifier}/{index}.{ext}
     - 주의: object_id는 반드시 각 콘텐츠별 고유한 값을 가져야 함.
     """
-    paths = []
-    for idx, file in enumerate(files):
-        ext = extract_ext(file.filename)
-        filename = f"{object_id}/{idx}.{ext}"
-        object_path = make_path(type, filename)
-        uploaded_uri = s3.upload_fileobj(
-            file, object_path,
-            extra={
-                'ACL': 'public-read',
-                'ContentType': file.content_type,
-            }
-        )
-        paths.append(uploaded_uri)
-    return paths
+    ext = extract_ext(file.filename)
+    filename = f"{object_id}.{ext}"
+    object_path = make_path(type, filename)
+    uploaded_uri = s3.upload_fileobj(
+        file, object_path,
+        extra={
+            'ACL': 'public-read',
+            'ContentType': file.content_type,
+        }
+    )
+    return uploaded_uri
