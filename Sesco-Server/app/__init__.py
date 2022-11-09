@@ -61,7 +61,7 @@ def create_sesco_app(config):
             crop=value,
             device=device
         )
-        # app.models[key].load_model()
+        app.models[key].load_model()
 
     app.register_blueprint(error_bp)
     app.register_blueprint(template_bp)

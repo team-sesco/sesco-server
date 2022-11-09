@@ -86,7 +86,7 @@ def api_v1_insert_detection(
     # TODO: AI 모델로부터 결과 받아오기
     response = requests.get(img)
     image = BytesIO(response.content)
-    current_app.models[category].load_model()
+    
     result = current_app.models[category].predict(image)
     return result
 
