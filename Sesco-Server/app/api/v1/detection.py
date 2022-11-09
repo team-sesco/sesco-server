@@ -1,5 +1,4 @@
 import requests
-from io import BytesIO
 from bson import ObjectId
 from uuid import uuid4
 from flask import g, current_app
@@ -70,7 +69,7 @@ def api_v1_post_detection_photo(
 
 @api.post('/detection')
 @timer
-@login_required
+#@login_required
 @Validator(bad_request)
 def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
@@ -84,13 +83,13 @@ def api_v1_insert_detection(
     detection_model = Detection(current_app.db)
     
     # TODO: AI 모델로부터 결과 받아오기
-    response = requests.get(img)
-    image = BytesIO(response.content)
-    
-    result = current_app.models[category].predict(image)
+    result = requests.post(
+                        config.AI_PREDICT_URI,
+                        json={
+                            "category": category,
+                            "img_url": img
+                        }).json()
     return result
-
-    print(f"result = {result}")
 
     # TODO: message
     message = None
@@ -115,7 +114,6 @@ def api_v1_insert_detection(
     }).inserted_id
 
     return created
-
 
 
 @api.delete('/detection/<detection_id>')

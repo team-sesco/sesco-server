@@ -50,6 +50,8 @@ class Config:
         "파": 9,
         # "호박": 10
     }
+    AI_PREDICT_URI = os.environ[APP_NAME + '_AI_PREDICT_URI']
+
     @staticmethod
     def init_app(app):
         pass
