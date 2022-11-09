@@ -1,7 +1,10 @@
 """
 Application Factory Module
 """
+import torch
 from datetime import datetime
+from config import config
+from model.ai.inference import Inference
 from flask import Flask
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
@@ -49,6 +52,16 @@ def create_sesco_app(config):
         bucket_name=config.S3_BUCKET_NAME,
         bucket_domain=config.PHOTO_DOMAIN,
     )
+
+    # AI
+    app.models = {}
+    device = torch.device("cpu")
+    for key, value in config.CROPS.items():
+        app.models[key] = Inference(
+            crop=value,
+            device=device
+        )
+        app.models[key].load_model()
 
     app.register_blueprint(error_bp)
     app.register_blueprint(template_bp)

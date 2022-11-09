@@ -1,4 +1,5 @@
 import requests
+from io import BytesIO
 from bson import ObjectId
 from flask import g, current_app
 from flask_validation_extended import Json, Route, Query
@@ -58,17 +59,14 @@ def api_v1_insert_detection(
     detection_model = Detection(current_app.db)
     
     # TODO: AI 모델로부터 결과 받아오기
-    result = requests.post(
-        config.AI_PREDICT_URI,
-        data={
-            "category":category,
-            "img_url":img
-        })
-    print(result)
+    response = requests.get(img)
+    image = BytesIO(response.content)
+    result = current_app.models[category].predict(image)
+
+    print(f"result = {result}")
+
     # TODO: message
     message = None
-
-
     
     user = user_model.get_userinfo(g.user_oid)
 

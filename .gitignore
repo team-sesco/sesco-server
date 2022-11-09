@@ -110,6 +110,7 @@ ENV/
 env.bak/
 venv.bak/
 wslvenv
+.winvenv
 
 # Spyder project settings
 .spyderproject
@@ -130,3 +131,9 @@ dmypy.json
 .pyre/
 .DS_Store
 Sesco-Server/apple-oauth.pem
+
+# AI model
+poolformer_nonpad.pth
+
+# CI/CD
+develop-deploy.yml
