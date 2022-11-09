@@ -37,7 +37,7 @@ class Config:
     ADMIN_PW = os.environ[APP_NAME + '_ADMIN_PW']
 
     # AI
-    AI_HOST = os.environ[APP_NAME + '_AI_HOST']
+    AI_PREDICT_URI = os.environ[APP_NAME + '_AI_DETECTION_URI']
 
     @staticmethod
     def init_app(app):

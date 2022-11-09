@@ -59,12 +59,12 @@ def api_v1_insert_detection(
     
     # TODO: AI 모델로부터 결과 받아오기
     result = requests.post(
-        config.AI_HOST+'/predict',
+        config.AI_PREDICT_URI,
         data={
             "category":category,
             "img_url":img
-        }).json()
-    
+        })
+    print(result)
     # TODO: message
     message = None
 
