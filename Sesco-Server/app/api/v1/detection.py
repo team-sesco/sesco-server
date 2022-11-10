@@ -69,7 +69,7 @@ def api_v1_post_detection_photo(
 
 @api.post('/detection')
 @timer
-#@login_required
+@login_required
 @Validator(bad_request)
 def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
