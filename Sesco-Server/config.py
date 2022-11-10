@@ -37,19 +37,6 @@ class Config:
     ADMIN_PW = os.environ[APP_NAME + '_ADMIN_PW']
 
     # AI
-    CROPS = {
-        "기타": 0,
-        "고추": 1,
-        "무": 2,
-        "배추": 3,
-        # "애호박": 4,
-        # "양배추": 5,
-        # "오이": 6,
-        # "토마토": 7,
-        "콩": 8,
-        "파": 9,
-        # "호박": 10
-    }
     AI_PREDICT_URI = os.environ[APP_NAME + '_AI_PREDICT_URI']
 
     @staticmethod
