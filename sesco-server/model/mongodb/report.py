@@ -22,6 +22,7 @@ class Report(Model):
             'user_id': None,
             'type': None,
             'content': None,
+            'status': "pending",  # pending, complete
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -30,14 +31,15 @@ class Report(Model):
     def insert_report(self, document: dict):
         return self.col.insert_one(self.schemize(document))
     
-    def get_reports(self, skip: int, limit: int):
+    def get_reports(self, status: str, skip: int, limit: int):
         return list((
-            self.col.find()
+            self.col.find(
+                {'status': status} if status else {},
+            )
             .sort('updated_at', DESCENDING)
             .skip(skip)
             .limit(limit)
         ))
-
     
     def get_report_one(self, help_oid: ObjectId):
         return self.col.find_one(

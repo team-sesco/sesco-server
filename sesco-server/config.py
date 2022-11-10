@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 
-APP_NAME = "Sesco"
+APP_NAME = "SESCO"
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 FLASK_CONFIG = os.getenv('FLASK_CONFIG') or 'development'
 
@@ -37,7 +37,8 @@ class Config:
     ADMIN_PW = os.environ[APP_NAME + '_ADMIN_PW']
 
     # AI
-    AI_PREDICT_URI = os.environ[APP_NAME + '_AI_PREDICT_URI']
+    AI_SERVER_DOMAIN = os.environ[APP_NAME + '_AI_SERVER_DOMAIN']
+    AI_SERVER_API_KEY = os.environ[APP_NAME + '_AI_SERVER_API_KEY']
 
     @staticmethod
     def init_app(app):
@@ -56,12 +57,6 @@ elif FLASK_CONFIG == 'production':
         DEBUG = False
         TESTING = False
         SECRET_KEY = os.environ[APP_NAME + "_SECRET_KEY"]
-
-        # Kakao Oauth
-        KAKAO_OAUTH_APP_ID = os.environ['KAKAO_OAUTH_APP_ID']
-        KAKAO_OAUTH_CLIENT_ID = os.environ['KAKAO_OAUTH_CLIENT_ID']
-        KAKAO_OAUTH_CLIENT_SECRET = os.environ['KAKAO_OAUTH_CLIENT_SECRET']
-        KAKAO_OAUTH_REDIRECT_URI = os.environ['KAKAO_OAUTH_REDIRECT_URI']
 
         # Google Oauth
         GOOGLE_OAUTH_CLIENT_ID = os.environ['GOOGLE_OAUTH_CLIENT_ID']

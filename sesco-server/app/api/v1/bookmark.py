@@ -5,7 +5,7 @@ from app.api.validation import ObjectIdValid
 from bson import ObjectId
 from flask import current_app, g
 from flask_validation_extended import Route, Validator
-from model.mongodb import User
+from model.mongodb import User, Detection
 
 from . import api_v1 as api
 
@@ -19,8 +19,9 @@ def api_v1_get_bookmarks():
     model = User(current_app.db)
 
     return response_200(
-        model.get_bookmarks(g.user_oid)
+        model.get_bookmarks(g.user_oid)['bookmarks']
     )
+
 
 @api.put('/bookmarks/<detection_id>')
 @timer
@@ -32,19 +33,29 @@ def api_v1_insert_bookmark(
     """ 북마크 추가 API"""
     model = User(current_app.db)
 
-    is_exist = model.is_exist_detection_id(
-        ObjectId(g.user_oid), 
+    if model.get_user_by_bookmark(
+        g.user_oid,
+        ObjectId(detection_id)
+    ):
+        return forbidden("Already bookmarked")
+
+    detection = Detection(current_app.db).get_detection_one(
         ObjectId(detection_id)
     )
-    if not is_exist:
-        # 중복 추가할 경우 -> Forbidden
-        return forbidden("no access")
+    if not detection:
+        return not_found
 
     model.upsert_bookmarks(
-        ObjectId(g.user_oid),
-        ObjectId(detection_id))
-
+        g.user_oid,
+        {
+            "detection_id": detection['_id'],
+            "detection_name": detection['name'],
+            "detection_location": detection['location'],
+            "detection_result": detection['result']
+        }
+    )
     return created
+
 
 @api.delete('/bookmarks/<detection_id>')
 @timer
@@ -54,14 +65,8 @@ def api_v1_delete_bookmark(
     detection_id=Route(str, rules=ObjectIdValid())
 ):
     """북마크 삭제 API"""
-    model = User(current_app.db)
-
-    bookmarks = model.get_bookmarks(ObjectId(g.user_oid))
-    if detection_id not in bookmarks:
-        return not_found
-    else:
-        model.delete_bookmarks(
-            ObjectId(g.user_oid),
-            ObjectId(detection_id)
-        )
-        return no_content
+    User(current_app.db).delete_bookmarks(
+        g.user_oid,
+        ObjectId(detection_id)
+    )
+    return no_content

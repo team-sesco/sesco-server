@@ -10,10 +10,7 @@ class Post(Model):
 
     @property
     def index(self) -> list:
-        return [
-            IndexModel([('id', ASCENDING)], unique=True),
-            IndexModel([('oauth_id', ASCENDING)]),
-        ]
+        return []
 
     @property
     def schema(self) -> dict:

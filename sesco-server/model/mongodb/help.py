@@ -23,6 +23,7 @@ class Help(Model):
             'user_img': None,
             'imgs': None,
             'content': None,
+            'status': "pending",  # pending, complete
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -31,9 +32,11 @@ class Help(Model):
     def insert_help(self, document: dict):
         return self.col.insert_one(self.schemize(document))
 
-    def get_helps(self, skip: int, limit: int):
+    def get_helps(self, status: str, skip: int, limit: int):
         return list((
-            self.col.find()
+            self.col.find(
+                {'status': status} if status else {},
+            )
             .sort('updated_at', DESCENDING)
             .skip(skip)
             .limit(limit)
@@ -43,8 +46,6 @@ class Help(Model):
         return self.col.find_one(
             {'_id': help_oid},
         )
-
-    
 
     def update_post(self, post_oid: ObjectId, document: dict):
         return self.col.update_one(

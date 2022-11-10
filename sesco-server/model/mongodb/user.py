@@ -90,42 +90,36 @@ class User(Model):
     def get_bookmarks(self, user_oid: ObjectId):
         """
         북마크 반환
-        set([str(ObjectId), str(ObjectId), ...])
         """
-        return list(map(str,(
-            self.col.find_one(
-                {'_id':user_oid},
-                {'bookmarks'}
-        )).get('bookmarks', [])))
+        return self.col.find_one(
+            {'_id': user_oid},
+            {'bookmarks': 1}
+        )
     
-    def is_exist_detection_id(self, user_oid: ObjectId, detection_id: ObjectId) -> bool:
+    def get_user_by_bookmark(self, user_oid: ObjectId, detection_id: ObjectId) -> bool:
         """
         user_oid에 해당하는 북마크에 detection_id가 있는지 확인
         존재할 경우 True
         존재하지 않을 경우 False
         """
-        result = list(self.col.find(
-            {   "_id":user_oid,
-                "bookmarks":{"$in":[detection_id]}
-            }))
+        return list(self.col.find(
+            {
+                "_id": user_oid,
+                "bookmarks.detection_id": {"$in": [detection_id]}
+            }
+        ))
 
-        if not result:
-            return False
-        
-        return True
-
-    def upsert_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
+    def upsert_bookmarks(self, user_oid: ObjectId, document: dict):
         """북마크 업설트"""
         self.col.update_one(
-            {'_id':user_oid},
-            {'$push': {'bookmarks': detection_oid}},
+            {'_id': user_oid},
+            {'$push': {'bookmarks': document}},
             upsert=True
         )
 
-    def delete_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
+    def delete_bookmarks(self, user_oid: ObjectId, detection_oid: ObjectId):
         """북마크 삭제"""
-        result = self.col.update_one(
-            {'_id':user_oid},
-            {'$pull': {'bookmarks': detection_oid}}
+        return self.col.update_one(
+            {'_id': user_oid},
+            {'$pull': {'bookmarks': {'detection_id': detection_oid}}}
         )
-        return result
