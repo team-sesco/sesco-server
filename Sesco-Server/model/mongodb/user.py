@@ -1,5 +1,5 @@
 from datetime import datetime
-from pymongo import IndexModel, DESCENDING, ASCENDING
+from pymongo import IndexModel, ASCENDING
 from bson.objectid import ObjectId
 from .base import Model
 
@@ -87,7 +87,7 @@ class User(Model):
             }}
         )
          
-    def get_bookmarks(self, user_oid:ObjectId):
+    def get_bookmarks(self, user_oid: ObjectId):
         """
         북마크 반환
         set([str(ObjectId), str(ObjectId), ...])
@@ -97,7 +97,23 @@ class User(Model):
                 {'_id':user_oid},
                 {'bookmarks'}
         )).get('bookmarks', [])))
+    
+    def is_exist_detection_id(self, user_oid: ObjectId, detection_id: ObjectId) -> bool:
+        """
+        user_oid에 해당하는 북마크에 detection_id가 있는지 확인
+        존재할 경우 True
+        존재하지 않을 경우 False
+        """
+        result = list(self.col.find(
+            {   "_id":user_oid,
+                "bookmarks":{"$in":[detection_id]}
+            }))
+
+        if not result:
+            return False
         
+        return True
+
     def upsert_bookmarks(self, user_oid:ObjectId, detection_oid:ObjectId):
         """북마크 업설트"""
         self.col.update_one(

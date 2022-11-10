@@ -1,13 +1,14 @@
-from bson import ObjectId
-from flask import g, current_app
-from flask_validation_extended import Route
-from flask_validation_extended import Validator
-from app.api.response import response_200, created, forbidden, no_content, not_found
-from app.api.response import bad_request
 from app.api.decorator import login_required, timer
+from app.api.response import (bad_request, created, forbidden, no_content,
+                              not_found, response_200)
 from app.api.validation import ObjectIdValid
+from bson import ObjectId
+from flask import current_app, g
+from flask_validation_extended import Route, Validator
 from model.mongodb import User
+
 from . import api_v1 as api
+
 
 @api.get("/bookmarks")
 @timer
@@ -31,8 +32,11 @@ def api_v1_insert_bookmark(
     """ 북마크 추가 API"""
     model = User(current_app.db)
 
-    bookmarks = model.get_bookmarks(ObjectId(g.user_oid))
-    if detection_id in bookmarks:
+    is_exist = model.is_exist_detection_id(
+        ObjectId(g.user_oid), 
+        ObjectId(detection_id)
+    )
+    if not is_exist:
         # 중복 추가할 경우 -> Forbidden
         return forbidden("no access")
 

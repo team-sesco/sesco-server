@@ -49,7 +49,7 @@ def api_v1_update_users_me_photo(
     """내 사진 갱신 API"""
     path = upload_to_s3(
         s3=current_app.s3,
-        files=photo,
+        file=photo,
         type='profile',
         object_id=str(g.user_oid)
     )[0]
