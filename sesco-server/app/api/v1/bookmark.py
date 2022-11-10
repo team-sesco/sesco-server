@@ -19,7 +19,7 @@ def api_v1_get_bookmarks():
     model = User(current_app.db)
 
     return response_200(
-        model.get_bookmarks(ObjectId(g.user_oid))
+        model.get_bookmarks(g.user_oid)
     )
 
 @api.put('/bookmarks/<detection_id>')

@@ -131,7 +131,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
-Sesco-Server/apple-oauth.pem
+sesco-server/apple-oauth.pem
 
 # AI model
 poolformer_nonpad.pth
