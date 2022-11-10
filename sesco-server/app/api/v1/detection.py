@@ -54,7 +54,7 @@ def api_v1_get_detection_one(
 def api_v1_post_detection_photo(
     img: File = File(
         rules=[
-            Ext(['.png', '.jpg', '.jpeg', '.gif']),
+            Ext(['.png', '.jpg', '.jpeg', '.gif', '.heic']),
             MaxFileCount(1)
         ]
     )
