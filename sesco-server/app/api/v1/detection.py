@@ -13,6 +13,7 @@ from model.mongodb import User, Detection, MasterConfig
 from config import config
 from . import api_v1 as api
 
+
 @api.get("/detection")
 @timer
 @login_required
@@ -23,11 +24,13 @@ def api_v1_get_detection(
 ):
     """ 탐지 기록 리스트 반환 API"""
     model = Detection(current_app.db)
-
     return response_200(
-        model.get_detections(skip=skip, limit=limit)
+        model.get_detections(
+            user_oid=g.user_oid,
+            skip=skip,
+            limit=limit
+        )
     )
-
 
 
 @api.get("/detection/<detection_id>")
@@ -60,10 +63,10 @@ def api_v1_post_detection_photo(
     return response_200(
         upload_to_s3(
             s3=current_app.s3,
-            file=img[0],
+            files=img,
             type="detection",
             object_id=f"{g.user_oid}_{uuid4()}"
-        )
+        )[0]
     )
 
 
@@ -81,22 +84,33 @@ def api_v1_insert_detection(
     """ 병해충 탐지 추가 API"""
     user_model = User(current_app.db)
     detection_model = Detection(current_app.db)
-    
-    # TODO: AI 모델로부터 결과 받아오기
-    result = requests.post(
-                        config.AI_PREDICT_URI,
-                        json={
-                            "category": category,
-                            "img_url": img
-                        }).json()
-    
-    # TODO: message
-    message = None
-    
+
     user = user_model.get_userinfo(g.user_oid)
 
-    # name, category, location, result 담기
-    search_str = None
+    model_result = requests.get(
+        headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
+        url=f"{config.AI_SERVER_DOMAIN}/api/v1/predict"
+        f"?category={category}"
+        f"&img={img}"
+    )
+    if model_result.status_code != 200:
+        return bad_request(model_result.json()['description'])
+    model_result = model_result.json()
+
+    message = [
+        {'sender': 'bot', 'content': '안녕하세요! 세스코입니다.'},
+    ]
+    if model_result['result'][-2:] == "정상":
+        message.append(
+            {'sender': 'bot', 'content': '감지된 병해충이 없습니다.'}
+        )
+    else:
+        message.append(
+            {
+                'sender': 'bot',
+                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']}\"이 감지되었습니다."
+            }
+        )
 
     detection_model.insert_detection({
         'user_name': user['name'],
@@ -107,10 +121,10 @@ def api_v1_insert_detection(
         'category': category,
         'location': location,
         'coordinate': coordinate,
-        'result': result,
+        'result': model_result['result'],
         'message': message,
-        'search_str':search_str,
-    }).inserted_id
+        'search_str': f"{model_result['result']} {category} {location}",
+    })
 
     return created
 
@@ -124,15 +138,14 @@ def api_v1_delete_detection(
 ):
     """탐지기록 삭제 API"""
     detection_model = Detection(current_app.db)
-    
+
     detection = detection_model.get_detection_one(ObjectId(detection_id))
     if detection['user_id'] != g.user_oid:
         return forbidden("No permission")
-    
+
     detection_model.delete_detection(ObjectId(detection_id))
 
     return no_content
-
 
 
 @api.get("/detection/solution")
@@ -140,14 +153,12 @@ def api_v1_delete_detection(
 @login_required
 @Validator(bad_request)
 def api_v1_get_solution(
-    disease=Json(str, rules=MinLen(1))
+    disease=Query(str, rules=MinLen(1))
 ):
     """대처 방안 반환 API"""
     model = MasterConfig(current_app.db)
-
-    return response_200(
-        model.get_solution(disease)
-    )
+    result = model.get_value('pest_dict')
+    return response_200(result['value'][disease])
 
 
 @api.get("/search")

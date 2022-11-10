@@ -9,7 +9,7 @@ from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
 from controller.util import remove_none_value
 from controller.file_util import upload_to_s3
-from model.mongodb import User
+from model.mongodb import User, Detection
 from . import api_v1 as api
 
 
@@ -29,7 +29,7 @@ def api_v1_get_users_me():
 @Validator(bad_request)
 def api_v1_update_users_me(
     name=Json(str, rules=MinLen(1), optional=True),
-    introduction=Json(str, rules=MinLen(1), optional=True)
+    img=Json(str, rules=MinLen(1), optional=True)
 ):
     """내 정보 갱신 API"""
     new_info = remove_none_value(locals())
@@ -54,7 +54,7 @@ def api_v1_update_users_me_photo(
         object_id=str(g.user_oid)
     )[0]
 
-    # TODO: 캐싱된 모든 곳 갱신해야 함
+    # TODO: Scheduler or 30 days limit
     return created
 
 

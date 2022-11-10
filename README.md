@@ -10,7 +10,7 @@
 
 ```shell
 $ cd ~/
-$ pip install -r Sesco-Server/requirement.txt
+$ pip install -r sesco-server/requirement.txt
 ```
 
 

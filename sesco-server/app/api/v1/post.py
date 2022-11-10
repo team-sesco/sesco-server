@@ -88,7 +88,7 @@ def api_v1_update_post(
         return forbidden("No permission")
 
     post_model.update_post(ObjectId(post_id), new_info)
-    return no_content
+    return created
 
 
 @api.delete('/post/<post_id>')
@@ -102,6 +102,8 @@ def api_v1_delete_post(
     post_model = Post(current_app.db)
 
     post = post_model.get_post_one(ObjectId(post_id))
+    if not post:
+        return bad_request("No post")
     if post['author_id'] != g.user_oid:
         return forbidden("No permission")
     post_model.delete_post(ObjectId(post_id))
