@@ -8,9 +8,10 @@ on:
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_PW: ${{ secrets.DOCKERHUB_PW }}
-  AWS_SSM_ACCESS_KEY: ${{ secrets.AWS_SSM_ACCESS_KEY }}
-  AWS_SSM_SECRET_KEY: ${{ secrets.AWS_SSM_SECRET_KEY }}
+  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   IMAGE_TAG: ${{ github.sha }}
+  SESCO_ENV: ${{ secrets.SESCO_ENV_PATH }}
 
 jobs:  
   deploy: 
@@ -26,6 +27,15 @@ jobs:
       with:
         username: ${{ env.DOCKERHUB_USER }}
         password: ${{ env.DOCKERHUB_PW }}
+
+    - name: Download env file from S3
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        aws_access_key_id: ${{ env.AWS_ACCESS_KEY }}
+        aws_secret_access_key: ${{ env.AWS_SECRET_KEY }}
+        source: '${{ env.SESCO_ENV }}'
+        destination: './Sesco-Server/.env'
 
     - name: build and release to DockerHub
       env:
