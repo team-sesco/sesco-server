@@ -46,7 +46,7 @@ jobs:
         NAME: ${{ env.DOCKERHUB_USER }}
         REPO: sesco-server
       run: |
-        cd ./Sesco-Server
+        cd ./sesco-server
         docker build -t $REPO .
         docker tag $REPO:latest $NAME/$REPO:latest
         docker push $NAME/$REPO:latest
