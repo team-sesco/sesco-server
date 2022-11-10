@@ -138,3 +138,6 @@ poolformer_nonpad.pth
 
 # CI/CD
 develop-deploy.yml
+
+# Docker-compose
+docker-compose-dev.yml
