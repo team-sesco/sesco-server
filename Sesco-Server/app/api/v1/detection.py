@@ -89,8 +89,7 @@ def api_v1_insert_detection(
                             "category": category,
                             "img_url": img
                         }).json()
-    return result
-
+    
     # TODO: message
     message = None
     
