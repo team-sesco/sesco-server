@@ -1,7 +1,7 @@
 from bson import ObjectId
 from flask import g, current_app
 from flask_validation_extended import Json, Route, Query
-from flask_validation_extended import Validator, Min, MinLen
+from flask_validation_extended import Validator, MinLen
 from app.api.response import response_200, created, forbidden, no_content
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer

@@ -2,6 +2,7 @@
 Application Factory Module
 """
 from datetime import datetime
+from config import config
 from flask import Flask
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
@@ -47,7 +48,7 @@ def create_sesco_app(config):
         aws_access_key_id=config.S3_ACCESS_KEY_ID,
         aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
         bucket_name=config.S3_BUCKET_NAME,
-        bucket_domain=config.PHOTO_DOMAIN,
+        bucket_domain=config.S3_DOMAIN,
     )
 
     app.register_blueprint(error_bp)

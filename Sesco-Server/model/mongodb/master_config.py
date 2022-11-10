@@ -52,3 +52,9 @@ class MasterConfig(Model):
                 }
             }
         )
+
+    def get_solution(self, disease):
+        '''질병 대처방한 반환'''
+        return self.col.find_one(
+            {'key':'pest_dict'}
+        )["value"][disease]
