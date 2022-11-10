@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from .base import Model
 
 
-class Help(Model):
+class Report(Model):
 
     VERSION = 1
 
@@ -18,41 +18,35 @@ class Help(Model):
     @property
     def schema(self) -> dict:
         return {
+            'target_id': None,
             'user_id': None,
-            'user_name': None,
-            'user_img': None,
-            'imgs': None,
+            'type': None,
             'content': None,
+            'status': "pending",  # pending, complete
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
         }
 
-    def insert_help(self, document: dict):
+    def insert_report(self, document: dict):
         return self.col.insert_one(self.schemize(document))
-
-    def get_helps(self, skip: int, limit: int):
+    
+    def get_reports(self, status: str, skip: int, limit: int):
         return list((
-            self.col.find()
+            self.col.find(
+                {'status': status} if status else {},
+            )
             .sort('updated_at', DESCENDING)
             .skip(skip)
             .limit(limit)
         ))
-
-    def get_help_one(self, help_oid: ObjectId):
+    
+    def get_report_one(self, help_oid: ObjectId):
         return self.col.find_one(
             {'_id': help_oid},
         )
 
-    
-
-    def update_post(self, post_oid: ObjectId, document: dict):
-        return self.col.update_one(
-            {'_id': post_oid},
-            {'$set': document}
-        )
-
-    def delete_help(self, post_oid: ObjectId):
+    def delete_report(self, post_oid: ObjectId):
         return self.col.delete_one(
             {'_id': post_oid}
         )

@@ -38,8 +38,8 @@ jobs:
         aws_access_key_id: ${{ env.AWS_ACCESS_KEY }}
         aws_secret_access_key: ${{ env.AWS_SECRET_KEY }}
         aws_region: ${{ env.AWS_REGION }}
-        source: '${{ env.SESCO_ENV }}'
-        destination: './Sesco-Server/.env'
+        source: ${{ env.SESCO_ENV }}
+        destination: './sesco-server/.env'
 
     - name: build and release to DockerHub
       env:

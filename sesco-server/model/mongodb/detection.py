@@ -28,8 +28,8 @@ class Detection(Model):
             'coordinate': None,
             'result': None,
             'message': None,
-            'search_str':None,
-            'is_deleted':False,
+            'search_str': None,
+            'is_deleted': False,
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -42,22 +42,38 @@ class Detection(Model):
         """탐지 기록 임시 삭제 """
         return self.col.update_one(
             {'_id': detection_id},
-            {'$set': {'is_deleted':True}}
+            {'$set': {'is_deleted': True}}
         )
 
-
-    def get_detections(self, skip: int, limit: int):
-        return list(self.col.find()
-            .sort('updated_at', DESCENDING)
-            .skip(skip)
-            .limit(limit))
+    def get_detections(self, user_oid: ObjectId, skip: int, limit: int):
+        return list(self.col.find(
+            {
+                'user_id': user_oid,
+                'is_deleted': False,
+            }
+        ).sort('updated_at', DESCENDING)
+        .skip(skip)
+        .limit(limit)
+    )
     
-    def get_detection_one(self, detection_id:ObjectId):
+    def get_detection_one(self, detection_id: ObjectId):
         return self.col.find_one(
-            {'_id': detection_id},
+            {
+                '_id': detection_id,
+                'is_deleted': False
+            },
         )
-    def get_search(self, search_str:str):
+
+    def get_search(self, search_str: str):
         """
-        search_str이 정해지고나서 
+        검색.
         """
-        pass
+        return list(self.col.find(
+            {'search_str': {'$regex': search_str}}
+        ))
+
+    def update_one(self, document: dict):
+        return self.col.update_one(
+            {'_id': document['_id']},
+            {'$set': document}
+        )

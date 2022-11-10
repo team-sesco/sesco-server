@@ -4,7 +4,7 @@ from flask_validation_extended import Json, Route, Query
 from flask_validation_extended import Validator, MinLen
 from app.api.response import response_200, created, forbidden, no_content
 from app.api.response import bad_request
-from app.api.decorator import login_required, timer
+from app.api.decorator import login_required, admin_required, timer
 from app.api.validation import ObjectIdValid
 from model.mongodb import Report
 from . import api_v1 as api
@@ -30,24 +30,30 @@ def api_v1_insert_report(
 
     return created
 
+
 @api.get("/report")
 @timer
-@login_required
+@admin_required
 @Validator(bad_request)
 def api_v1_get_reports(
+    status: str = Query(str, default=None, optional=True),
     skip: int = Query(int, default=0, optional=True),
     limit: int = Query(int, default=0, optional=True)
 ):
     """신고 목록 조회 API"""
     model = Report(current_app.db)
     return response_200(
-        model.get_reports(skip=skip, limit=limit)
+        model.get_reports(
+            status=status,
+            skip=skip,
+            limit=limit
+        )
     )
 
 
 @api.get("/report/<report_id>")
 @timer
-@login_required
+@admin_required
 @Validator(bad_request)
 def api_v1_get_report(
     report_id: str = Route(str, rules=ObjectIdValid())
@@ -57,21 +63,3 @@ def api_v1_get_report(
     return response_200(
         model.get_report_one(ObjectId(report_id))
     )
-
-
-@api.delete('/report/<report_id>')
-@timer
-@login_required
-@Validator(bad_request)
-def api_v1_delete_report(
-    report_id=Route(str, rules=ObjectIdValid())
-):
-    """신고 삭제 API"""
-    model = Report(current_app.db)
-
-    post = model.get_report_one(ObjectId(report_id))
-    if post['user_id'] != g.user_oid:
-        return forbidden("No permission")
-    model.delete_report(ObjectId(report_id))
-
-    return no_content
