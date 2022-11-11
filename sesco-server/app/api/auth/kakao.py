@@ -21,7 +21,9 @@ def kakao_oauth_api(
 
     # Get SESCO User Info
     model = User(current_app.db)
-    user = model.get_password_with_id(kakao_user['id'])
+    user = model.get_password_with_id(
+        f"kakao_{kakao_user['id']}"
+    )
 
     if user:
         user_oid = str(user['_id'])
