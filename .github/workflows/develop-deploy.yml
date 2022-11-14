@@ -1,0 +1,69 @@
+name: SESCO Production Deployment
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_PW: ${{ secrets.DOCKERHUB_PW }}
+  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+  AWS_REGION: ${{ secrets.AWS_REGION}}
+  AWS_SSM_ACCESS_KEY: ${{ secrets.AWS_SSM_ACCESS_KEY }}
+  AWS_SSM_SECRET_KEY: ${{ secrets.AWS_SSM_SECRET_KEY }}
+  IMAGE_TAG: ${{ github.sha }}
+  SESCO_ENV: ${{ secrets.SESCO_ENV_PATH }}
+  SESCO_HOST: ${{ secrets.SESCO_HOST }}
+  SESCO_PORT: ${{ secrets.SESCO_PORT }}
+  SESCO_USER: ${{ secrets.SESCO_USER }}
+  SESCO_PW: ${{ secrets.SESCO_PW }}
+jobs:  
+  deploy: 
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v3
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ env.DOCKERHUB_USER }}
+        password: ${{ env.DOCKERHUB_PW }}
+
+    - name: Download env file from S3
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        aws_access_key_id: ${{ env.AWS_ACCESS_KEY }}
+        aws_secret_access_key: ${{ env.AWS_SECRET_KEY }}
+        aws_region: ${{ env.AWS_REGION }}
+        source: ${{ env.SESCO_ENV }}
+        destination: './sesco-server/.env'
+
+    - name: build and release to DockerHub
+      env:
+        NAME: ${{ env.DOCKERHUB_USER }}
+        REPO: sesco-server
+      run: |
+        cd ./sesco-server
+        docker build -t $REPO .
+        docker tag $REPO:latest $NAME/$REPO:latest
+        docker push $NAME/$REPO:latest
+    
+    - name: Docker Pull and Server Restart
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.SESCO_HOST }}
+        port: ${{ env.SESCO_PORT }}
+        username: ${{ env.SESCO_USER }}
+        password: ${{ env.SESCO_PW }}
+        
+        script: |
+          docker pull ${{ env.DOCKERHUB_USER }}/sesco-server:latest && \
+          docker-compose stop sesco-server && \
+          docker-compose rm -f sesco-server && \
+          docker-compose up -d --no-deps sesco-server
