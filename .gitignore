@@ -102,16 +102,18 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
+*.env
+*.venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+wslvenv/
 wslvenv
-.winvenv
-.wslvenv
+winvenv/
+winvenv
+
 
 # Spyder project settings
 .spyderproject
@@ -131,10 +133,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
-sesco-server/apple-oauth.pem
+Sesco-Server/apple-oauth.pem
 
-# AI model
-poolformer_nonpad.pth
-
-# Docker-compose
-docker-compose-dev.yml
+# ai model
+sesco-ai-server/model/ai/weight/poolformer_nonpad.pth
+winvenv/*
