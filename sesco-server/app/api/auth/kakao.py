@@ -1,7 +1,7 @@
 from flask import current_app
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_validation_extended import Validator, Json
-from app.api.response import bad_request, response_200
+from app.api.response import bad_request, response_200, unauthorized
 from app.api.decorator import timer
 from controller.auth.kakao import get_userinfo
 from model.mongodb import User
@@ -19,11 +19,16 @@ def kakao_oauth_api(
     # Get Kakao User Info
     kakao_user = get_userinfo(access_token)
 
+    # Check Kakao User Auth
+    if 'id' not in kakao_user:
+        return unauthorized('invalid_request')
+
     # Get SESCO User Info
     model = User(current_app.db)
     user = model.get_password_with_id(
         f"kakao_{kakao_user['id']}"
     )
+
 
     if user:
         user_oid = str(user['_id'])
