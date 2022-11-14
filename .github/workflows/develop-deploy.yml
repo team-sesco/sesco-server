@@ -15,10 +15,10 @@ env:
   AWS_SSM_SECRET_KEY: ${{ secrets.AWS_SSM_SECRET_KEY }}
   IMAGE_TAG: ${{ github.sha }}
   SESCO_ENV: ${{ secrets.SESCO_ENV_PATH }}
-  SESCO_HOST: ${{ secrets.SESCO_HOST }}
-  SESCO_PORT: ${{ secrets.SESCO_PORT }}
-  SESCO_USER: ${{ secrets.SESCO_USER }}
-  SESCO_PW: ${{ secrets.SESCO_PW }}
+  SESCO_DEV_HOST: ${{ secrets.SESCO_DEV_HOST }}
+  SESCO_DEV_PORT: ${{ secrets.SESCO_DEV_PORT }}
+  SESCO_DEV_USER: ${{ secrets.SESCO_DEV_USER }}
+  SESCO_DEV_PW: ${{ secrets.SESCO_DEV_PW }}
 jobs:  
   deploy: 
     name: Deploy
@@ -57,10 +57,10 @@ jobs:
     - name: Docker Pull and Server Restart
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ env.SESCO_HOST }}
-        port: ${{ env.SESCO_PORT }}
-        username: ${{ env.SESCO_USER }}
-        password: ${{ env.SESCO_PW }}
+        host: ${{ env.SESCO_DEV_HOST }}
+        port: ${{ env.SESCO_DEV_PORT }}
+        username: ${{ env.SESCO_DEV_USER }}
+        password: ${{ env.SESCO_DEV_PW }}
         
         script: |
           docker pull ${{ env.DOCKERHUB_USER }}/sesco-server:latest && \
