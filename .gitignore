@@ -136,8 +136,5 @@ sesco-server/apple-oauth.pem
 # AI model
 poolformer_nonpad.pth
 
-# CI/CD
-develop-deploy.yml
-
 # Docker-compose
 docker-compose-dev.yml
