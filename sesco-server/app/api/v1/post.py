@@ -67,45 +67,45 @@ def api_v1_insert_post(
     return created
 
 
-@api.put('/post/<post_id>')
+@api.put('/post/<post_oid>')
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_update_post(
-    post_id=Route(str, rules=ObjectIdValid()),
+    post_oid=Route(str, rules=ObjectIdValid()),
     name=Json(str, rules=MinLen(1), optional=True),
     content=Json(str, rules=MinLen(1), optional=True),
     img=Json(str, rules=MinLen(1), optional=True)
 ):
     """게시글 수정 API"""
     new_info = remove_none_value(locals())
-    del new_info['post_id']
+    del new_info['post_oid']
 
     post_model = Post(current_app.db)
 
-    post = post_model.get_post_one(ObjectId(post_id))
+    post = post_model.get_post_one(ObjectId(post_oid))
     if post['author_id'] != g.user_oid:
         return forbidden("No permission")
 
-    post_model.update_post(ObjectId(post_id), new_info)
+    post_model.update_post(ObjectId(post_oid), new_info)
     return created
 
 
-@api.delete('/post/<post_id>')
+@api.delete('/post/<post_oid>')
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_delete_post(
-    post_id=Route(str, rules=ObjectIdValid())
+    post_oid=Route(str, rules=ObjectIdValid())
 ):
     """게시글 삭제 API"""
     post_model = Post(current_app.db)
 
-    post = post_model.get_post_one(ObjectId(post_id))
+    post = post_model.get_post_one(ObjectId(post_oid))
     if not post:
         return bad_request("No post")
     if post['author_id'] != g.user_oid:
         return forbidden("No permission")
-    post_model.delete_post(ObjectId(post_id))
+    post_model.delete_post(ObjectId(post_oid))
 
     return no_content
