@@ -49,7 +49,7 @@ def api_v1_post_help_photo(
         ]
     )
 ):
-    """ 탐지 사진 업로드 API"""
+    """문의 이미지 업로드 API"""
     return response_200(
         upload_to_s3(
             s3=current_app.s3,
@@ -80,15 +80,15 @@ def api_v1_get_helps(
     )
 
 
-@api.get("/help/<help_id>")
+@api.get("/help/<help_oid>")
 @timer
 @admin_required
 @Validator(bad_request)
 def api_v1_get_help(
-    help_id: str = Route(str, rules=ObjectIdValid())
+    help_oid: str = Route(str, rules=ObjectIdValid())
 ):
     """문의 단일 조회 API"""
     model = Help(current_app.db)
     return response_200(
-        model.get_help_one(ObjectId(help_id))
+        model.get_help_one(ObjectId(help_oid))
     )

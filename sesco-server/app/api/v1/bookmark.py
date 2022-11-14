@@ -23,24 +23,24 @@ def api_v1_get_bookmarks():
     )
 
 
-@api.put('/bookmarks/<detection_id>')
+@api.put('/bookmarks/<detection_oid>')
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_insert_bookmark(
-    detection_id: str = Route(str, rules=ObjectIdValid()),
+    detection_oid: str = Route(str, rules=ObjectIdValid()),
 ):
     """ 북마크 추가 API"""
     model = User(current_app.db)
 
     if model.get_user_by_bookmark(
         g.user_oid,
-        ObjectId(detection_id)
+        ObjectId(detection_oid)
     ):
         return forbidden("Already bookmarked")
 
     detection = Detection(current_app.db).get_detection_one(
-        ObjectId(detection_id)
+        ObjectId(detection_oid)
     )
     if not detection:
         return not_found
@@ -57,16 +57,16 @@ def api_v1_insert_bookmark(
     return created
 
 
-@api.delete('/bookmarks/<detection_id>')
+@api.delete('/bookmarks/<detection_oid>')
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_delete_bookmark(
-    detection_id=Route(str, rules=ObjectIdValid())
+    detection_oid=Route(str, rules=ObjectIdValid())
 ):
     """북마크 삭제 API"""
     User(current_app.db).delete_bookmarks(
         g.user_oid,
-        ObjectId(detection_id)
+        ObjectId(detection_oid)
     )
     return no_content

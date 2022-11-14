@@ -51,15 +51,15 @@ def api_v1_get_reports(
     )
 
 
-@api.get("/report/<report_id>")
+@api.get("/report/<report_oid>")
 @timer
 @admin_required
 @Validator(bad_request)
 def api_v1_get_report(
-    report_id: str = Route(str, rules=ObjectIdValid())
+    report_oid: str = Route(str, rules=ObjectIdValid())
 ):
     """신고 단일 조회 API"""
     model = Report(current_app.db)
     return response_200(
-        model.get_report_one(ObjectId(report_id))
+        model.get_report_one(ObjectId(report_oid))
     )
