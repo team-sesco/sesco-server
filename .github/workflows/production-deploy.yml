@@ -15,7 +15,10 @@ env:
   AWS_SSM_SECRET_KEY: ${{ secrets.AWS_SSM_SECRET_KEY }}
   IMAGE_TAG: ${{ github.sha }}
   SESCO_ENV: ${{ secrets.SESCO_ENV_PATH }}
-
+  SESCO_PROD_HOST: ${{ secrets.SESCO_PROD_HOST }}
+  SESCO_PROD_PORT: ${{ secrets.SESCO_PROD_PORT }}
+  SESCO_PROD_USER: ${{ secrets.SESCO_PROD_USER }}
+  SESCO_PROD_PW: ${{ secrets.SESCO_PROD_PW }}
 jobs:  
   deploy: 
     name: Deploy
@@ -50,14 +53,18 @@ jobs:
         docker build -t $REPO .
         docker tag $REPO:latest $NAME/$REPO:latest
         docker push $NAME/$REPO:latest
-
-    - name: Configure AWS credentials for SSM
-      uses: aws-actions/configure-aws-credentials@v1 
+    
+    - name: Docker Pull and Server Restart
+      uses: appleboy/ssh-action@master
       with:
-        aws-access-key-id: ${{ env.AWS_SSM_ACCESS_KEY }}
-        aws-secret-access-key: ${{ env.AWS_SSM_SECRET_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: AWS SSM Send-Deploy-Command
-      run: |
-        aws ssm send-command --targets Key=tag:Name,Values=sesco-server --document-name SESCO-SERVER-EC2-Reload
+        host: ${{ env.SESCO_PROD_HOST }}
+        port: ${{ env.SESCO_PROD_PORT }}
+        username: ${{ env.SESCO_PROD_USER }}
+        password: ${{ env.SESCO_PROD_PW }}
+        
+        script: |
+          cd sesco && \
+          docker pull ${{ env.DOCKERHUB_USER }}/sesco-server:latest && \
+          docker-compose stop sesco-server && \
+          docker-compose rm -f sesco-server && \
+          docker-compose up -d --no-deps sesco-server
