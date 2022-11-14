@@ -1,4 +1,4 @@
-name: SESCO Production Deployment
+name: SESCO Develop Deployment
 
 on:
   push:
@@ -63,6 +63,7 @@ jobs:
         password: ${{ env.SESCO_DEV_PW }}
         
         script: |
+          cd sesco_dev && \
           docker pull ${{ env.DOCKERHUB_USER }}/sesco-server:latest && \
           docker-compose stop sesco-server && \
           docker-compose rm -f sesco-server && \
