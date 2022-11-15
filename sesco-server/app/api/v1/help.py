@@ -8,6 +8,7 @@ from app.api.response import bad_request
 from app.api.decorator import login_required, admin_required, timer
 from app.api.validation import ObjectIdValid
 from controller.file_util import upload_to_s3
+from controller.util import remove_none_value
 from model.mongodb import User
 from model.mongodb import Help
 from . import api_v1 as api
@@ -92,3 +93,19 @@ def api_v1_get_help(
     return response_200(
         model.get_help_one(ObjectId(help_oid))
     )
+
+
+@api.put("/help/<help_oid>")
+@timer
+@admin_required
+@Validator(bad_request)
+def api_v1_update_help_status(
+    help_oid: str = Route(str, rules=ObjectIdValid()),
+    status: str = Query(str, rules=MinLen(1))
+):
+    """문의 처리 API"""
+    if status not in set(["pending", "complete"]):
+        return "wrong parameter (status)"
+    new_info = remove_none_value(locals())
+    Help(current_app.db).update_help(ObjectId(help_oid), new_info)
+    return created
