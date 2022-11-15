@@ -7,6 +7,7 @@ from app.api.response import bad_request
 from app.api.decorator import login_required, admin_required, timer
 from app.api.validation import ObjectIdValid
 from model.mongodb import Report
+from controller.util import remove_none_value
 from . import api_v1 as api
 
 
@@ -76,6 +77,6 @@ def api_v1_update_report_status(
     """신고 처리 API"""
     if status not in set(["pending", "complete"]):
         return "wrong parameter (status)"
-    model = Report(current_app.db)
-    model.update_report_staus(ObjectId(report_oid), status)
+    new_info = remove_none_value(locals())
+    Report(current_app.db).update_report(ObjectId(report_oid), new_info)
     return created

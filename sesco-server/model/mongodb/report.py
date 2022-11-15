@@ -51,10 +51,8 @@ class Report(Model):
             {'_id': report_oid}
         )
 
-    def update_report_staus(self, report_oid:ObjectId, status:str):
+    def update_report(self, report_oid:ObjectId, document: dict):
         return self.col.update_one(
             {'_id': report_oid},
-            {'$set': {
-                'status': status,
-            }}
+            {'$set': document}
         )
