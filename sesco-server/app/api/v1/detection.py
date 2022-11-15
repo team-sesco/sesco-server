@@ -112,7 +112,7 @@ def api_v1_insert_detection(
             }
         )
 
-    detection_model.insert_detection({
+    detection_oid = detection_model.insert_detection({
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
@@ -124,9 +124,11 @@ def api_v1_insert_detection(
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
-    })
+    }).inserted_id
 
-    return created
+    return response_200(
+        detection_oid
+    )
 
 '''
 @api.delete('/detection/<detection_id>')
