@@ -33,17 +33,17 @@ def api_v1_get_detection(
     )
 
 
-@api.get("/detection/<detection_id>")
+@api.get("/detection/<detection_oid>")
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_get_detection_one(
-    detection_id: str = Route(str, rules=ObjectIdValid())
+    detection_oid: str = Route(str, rules=ObjectIdValid())
 ):
     """탐지 기록 단일 조회 API"""
     model = Detection(current_app.db)
     return response_200(
-        model.get_detection_one(ObjectId(detection_id))
+        model.get_detection_one(ObjectId(detection_oid))
     )
 
 
@@ -112,7 +112,7 @@ def api_v1_insert_detection(
             }
         )
 
-    detection_model.insert_detection({
+    detection_oid = detection_model.insert_detection({
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
@@ -124,11 +124,13 @@ def api_v1_insert_detection(
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
-    })
+    }).inserted_id
 
-    return created
+    return response_200(
+        detection_oid
+    )
 
-
+'''
 @api.delete('/detection/<detection_id>')
 @timer
 @login_required
@@ -146,7 +148,7 @@ def api_v1_delete_detection(
     detection_model.delete_detection(ObjectId(detection_id))
 
     return no_content
-
+'''
 
 @api.get("/detection/solution")
 @timer

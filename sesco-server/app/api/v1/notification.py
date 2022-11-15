@@ -47,34 +47,34 @@ def api_v1_get_notification(
 
 
 
-@api.get("/notification/<notification_id>")
+@api.get("/notification/<notification_oid>")
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_get_notification_one(
-    notification_id: str = Route(str, rules=ObjectIdValid())
+    notification_oid: str = Route(str, rules=ObjectIdValid())
 ):
     """ 알림 단일 조회 API"""
     model = Notification(current_app.db)
     return response_200(
-        model.get_notification_one(ObjectId(notification_id))
+        model.get_notification_one(ObjectId(notification_oid))
     )
 
-@api.delete('/notification/<notification_id>')
+@api.delete('/notification/<notification_oid>')
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_delete_notification(
-    notification_id=Route(str, rules=ObjectIdValid())
+    notification_oid=Route(str, rules=ObjectIdValid())
 ):
     """ 알림 삭제 API"""
     model = Notification(current_app.db)
     
-    detection = model.get_notification_one(ObjectId(notification_id))
+    detection = model.get_notification_one(ObjectId(notification_oid))
     if detection['user_id'] != g.user_oid:
         return forbidden("No permission")
     
-    model.delete_notification(ObjectId(notification_id))
+    model.delete_notification(ObjectId(notification_oid))
 
     return no_content
 

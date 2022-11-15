@@ -47,9 +47,9 @@ class Help(Model):
             {'_id': help_oid},
         )
 
-    def update_post(self, post_oid: ObjectId, document: dict):
+    def update_help(self, help_oid: ObjectId, document: dict):
         return self.col.update_one(
-            {'_id': post_oid},
+            {'_id': help_oid},
             {'$set': document}
         )
 

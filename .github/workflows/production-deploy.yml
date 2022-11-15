@@ -8,14 +8,15 @@ on:
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_PW: ${{ secrets.DOCKERHUB_PW }}
-  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+  AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
+  AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION}}
-  AWS_SSM_ACCESS_KEY: ${{ secrets.AWS_SSM_ACCESS_KEY }}
-  AWS_SSM_SECRET_KEY: ${{ secrets.AWS_SSM_SECRET_KEY }}
   IMAGE_TAG: ${{ github.sha }}
   SESCO_ENV: ${{ secrets.SESCO_ENV_PATH }}
-
+  SESCO_PROD_HOST: ${{ secrets.SESCO_PROD_HOST }}
+  SESCO_PROD_PORT: ${{ secrets.SESCO_PROD_PORT }}
+  SESCO_PROD_USER: ${{ secrets.SESCO_PROD_USER }}
+  SESCO_PROD_PW: ${{ secrets.SESCO_PROD_PW }}
 jobs:  
   deploy: 
     name: Deploy
@@ -35,8 +36,8 @@ jobs:
       uses: keithweaver/aws-s3-github-action@v1.0.0
       with:
         command: cp
-        aws_access_key_id: ${{ env.AWS_ACCESS_KEY }}
-        aws_secret_access_key: ${{ env.AWS_SECRET_KEY }}
+        aws_access_key_id: ${{ env.AWS_S3_ACCESS_KEY }}
+        aws_secret_access_key: ${{ env.AWS_S3_SECRET_KEY }}
         aws_region: ${{ env.AWS_REGION }}
         source: ${{ env.SESCO_ENV }}
         destination: './sesco-server/.env'
@@ -50,14 +51,18 @@ jobs:
         docker build -t $REPO .
         docker tag $REPO:latest $NAME/$REPO:latest
         docker push $NAME/$REPO:latest
-
-    - name: Configure AWS credentials for SSM
-      uses: aws-actions/configure-aws-credentials@v1 
+    
+    - name: Docker Pull and Server Restart
+      uses: appleboy/ssh-action@master
       with:
-        aws-access-key-id: ${{ env.AWS_SSM_ACCESS_KEY }}
-        aws-secret-access-key: ${{ env.AWS_SSM_SECRET_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: AWS SSM Send-Deploy-Command
-      run: |
-        aws ssm send-command --targets Key=tag:Name,Values=sesco-server --document-name SESCO-SERVER-EC2-Reload
+        host: ${{ env.SESCO_PROD_HOST }}
+        port: ${{ env.SESCO_PROD_PORT }}
+        username: ${{ env.SESCO_PROD_USER }}
+        password: ${{ env.SESCO_PROD_PW }}
+        
+        script: |
+          cd sesco && \
+          docker pull ${{ env.DOCKERHUB_USER }}/sesco-server:latest && \
+          docker-compose stop sesco-server && \
+          docker-compose rm -f sesco-server && \
+          docker-compose up -d --no-deps sesco-server

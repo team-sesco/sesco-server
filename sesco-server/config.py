@@ -20,7 +20,7 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 24 * 365
     JWT_REFRESH_TOKEN_EXPIRES = 60 * 60 * 24 * 365
     JWT_SESSION_COOKIE = False
-    SECRET_KEY = "SESCO-SECRET-KEY"
+    SECRET_KEY = os.environ[APP_NAME + "_SECRET_KEY"]
 
     # MongoDB
     MONGODB_URI = os.environ[APP_NAME + "_MONGODB_URI"]

@@ -1,7 +1,7 @@
 """User 관련 APIs"""
 from flask import g, current_app
 from flask_validation_extended import Json, Route, File
-from flask_validation_extended import Validator, MinLen, Ext
+from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
 from bson.objectid import ObjectId
 from app.api.response import response_200, created
 from app.api.response import bad_request
@@ -44,18 +44,23 @@ def api_v1_update_users_me(
 @login_required
 @Validator(bad_request)
 def api_v1_update_users_me_photo(
-    photo=File(rules=Ext(['.png', '.jpg', '.jpeg', '.gif']))
+    photo: File = File(
+        rules=[
+            Ext(['.png', '.jpg', '.jpeg', '.gif', '.heic']),
+            MaxFileCount(1)
+        ]
+    )
 ):
-    """내 사진 갱신 API"""
-    path = upload_to_s3(
-        s3=current_app.s3,
-        files=photo,
-        type='profile',
-        object_id=str(g.user_oid)
-    )[0]
-
+    """ 사용자 사진 업로드 API"""
     # TODO: Scheduler or 30 days limit
-    return created
+    return response_200(
+        upload_to_s3(
+            s3=current_app.s3,
+            files=photo,
+            type='profile',
+            object_id=str(g.user_oid)
+        )[0]
+    )
 
 
 @api.get("/users/<user_oid>")
