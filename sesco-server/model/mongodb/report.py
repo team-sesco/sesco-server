@@ -41,12 +41,20 @@ class Report(Model):
             .limit(limit)
         ))
     
-    def get_report_one(self, help_oid: ObjectId):
+    def get_report_one(self, report_oid: ObjectId):
         return self.col.find_one(
-            {'_id': help_oid},
+            {'_id': report_oid},
         )
 
-    def delete_report(self, post_oid: ObjectId):
+    def delete_report(self, report_oid: ObjectId):
         return self.col.delete_one(
-            {'_id': post_oid}
+            {'_id': report_oid}
+        )
+
+    def update_report_staus(self, report_oid:ObjectId, status:str):
+        return self.col.update_one(
+            {'_id': report_oid},
+            {'$set': {
+                'status': status,
+            }}
         )
