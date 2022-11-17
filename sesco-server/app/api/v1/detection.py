@@ -11,6 +11,7 @@ from app.api.validation import ObjectIdValid
 from controller.file_util import upload_to_s3
 from model.mongodb import User, Detection, MasterConfig
 from config import config
+from datetime import datetime
 from . import api_v1 as api
 
 
@@ -121,6 +122,7 @@ def api_v1_insert_detection(
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
+        'created_at': datetime.now()
     }
 
     detection_model.insert_detection(detection_info)
