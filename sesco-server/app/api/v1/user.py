@@ -18,8 +18,10 @@ from . import api_v1 as api
 @login_required
 def api_v1_get_users_me():
     """내 정보 반환 API"""
+    result = User(current_app.db).get_userinfo(g.user_oid)
+    del result['password']
     return response_200(
-        User(current_app.db).get_userinfo(g.user_oid)
+        result
     )
 
 
@@ -69,7 +71,9 @@ def api_v1_update_users_me_photo(
 def api_v1_get_user(
     user_oid=Route(str, rules=ObjectIdValid())
 ):
+    result = User(current_app.db).get_userinfo(ObjectId(user_oid))
+    del result['password']
     """특정 사용자 정보 반환 API"""
     return response_200(
-        User(current_app.db).get_userinfo(ObjectId(user_oid))
+        result
     )
