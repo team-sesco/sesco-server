@@ -25,12 +25,18 @@ def api_v1_get_detection(
 ):
     """ 탐지 기록 리스트 반환 API"""
     model = Detection(current_app.db)
+    results = model.get_detections(
+                user_oid=g.user_oid,
+                skip=skip,
+                limit=limit
+            )
+
+    for result in results:
+        result['created_at'] = result['created_at'].strftime("%Y년 %m월 %d일 %H시 %M분")
+        del result['search_str']
+
     return response_200(
-        model.get_detections(
-            user_oid=g.user_oid,
-            skip=skip,
-            limit=limit
-        )
+        results
     )
 
 
@@ -43,8 +49,12 @@ def api_v1_get_detection_one(
 ):
     """탐지 기록 단일 조회 API"""
     model = Detection(current_app.db)
+    result = model.get_detection_one(ObjectId(detection_oid))
+    result['created_at'] = result['created_at'].strftime("%Y년 %m월 %d일 %H시 %M분")
+    del result['search_str']
+
     return response_200(
-        model.get_detection_one(ObjectId(detection_oid))
+        result
     )
 
 
@@ -122,11 +132,11 @@ def api_v1_insert_detection(
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
-        'created_at': datetime.now()
     }
-
+    
     detection_model.insert_detection(detection_info)
     del detection_info['search_str']
+    detection_info['created_at'] = datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분")
 
     return response_200(
         detection_info
