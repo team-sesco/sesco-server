@@ -11,8 +11,7 @@ class Detection(Model):
     @property
     def index(self) -> list:
         return [
-            IndexModel([('id', ASCENDING)], unique=True),
-            IndexModel([('oauth_id', ASCENDING)]),
+            IndexModel([('id', ASCENDING)], unique=True)
         ]
 
     @property
@@ -25,7 +24,6 @@ class Detection(Model):
             'img': None,
             'category': None,
             'location': None,
-            'coordinate': None,
             'result': None,
             'message': None,
             'search_str': None,
