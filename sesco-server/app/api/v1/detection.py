@@ -76,9 +76,8 @@ def api_v1_post_detection_photo(
 @Validator(bad_request)
 def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
-    name=Json(str, rules=MinLen(1)),
     category=Json(str, rules=MinLen(1)),
-    location=Json(str, rules=MinLen(1)),
+    location=Json(dict),
     coordinate=Json(dict)
 ):
     """ 병해충 탐지 추가 API"""
@@ -116,7 +115,7 @@ def api_v1_insert_detection(
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
-        'name': name,
+        'name': "*****************************************model_result_title_name*****************************************",
         'img': img,
         'category': category,
         'location': location,
