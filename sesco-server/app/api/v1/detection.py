@@ -124,6 +124,7 @@ def api_v1_insert_detection(
     }
 
     detection_model.insert_detection(detection_info)
+    del detection_info['search_str']
 
     return response_200(
         detection_info
