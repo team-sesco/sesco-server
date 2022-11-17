@@ -76,9 +76,8 @@ def api_v1_post_detection_photo(
 @Validator(bad_request)
 def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
-    name=Json(str, rules=MinLen(1)),
     category=Json(str, rules=MinLen(1)),
-    location=Json(str, rules=MinLen(1)),
+    location=Json(dict),
     coordinate=Json(dict)
 ):
     """ 병해충 탐지 추가 API"""
@@ -112,11 +111,11 @@ def api_v1_insert_detection(
             }
         )
 
-    detection_oid = detection_model.insert_detection({
+    detection_info = {
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
-        'name': name,
+        'name': "*****************************************model_result_title_name*****************************************",
         'img': img,
         'category': category,
         'location': location,
@@ -124,10 +123,12 @@ def api_v1_insert_detection(
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
-    }).inserted_id
+    }
+
+    detection_model.insert_detection(detection_info)
 
     return response_200(
-        detection_oid
+        detection_info
     )
 
 '''
