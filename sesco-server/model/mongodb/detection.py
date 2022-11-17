@@ -25,7 +25,6 @@ class Detection(Model):
             'img': None,
             'category': None,
             'location': None,
-            'coordinate': None,
             'result': None,
             'message': None,
             'search_str': None,
