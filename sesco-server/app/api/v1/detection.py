@@ -77,8 +77,7 @@ def api_v1_post_detection_photo(
 def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
     category=Json(str, rules=MinLen(1)),
-    location=Json(dict),
-    coordinate=Json(dict)
+    location=Json(dict)
 ):
     """ 병해충 탐지 추가 API"""
     user_model = User(current_app.db)
@@ -119,7 +118,6 @@ def api_v1_insert_detection(
         'img': img,
         'category': category,
         'location': location,
-        'coordinate': coordinate,
         'result': model_result['result'],
         'message': message,
         'search_str': f"{model_result['result']} {category} {location}",
