@@ -126,7 +126,7 @@ def api_v1_insert_detection(
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
-        'name': model_result['result']['name'],
+        'name': model_result['result'],
         'img': img,
         'category': category,
         'location': location,
