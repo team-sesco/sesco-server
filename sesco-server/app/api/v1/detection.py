@@ -130,10 +130,9 @@ def api_v1_insert_detection(
         'img': img,
         'category': category,
         'location': location,
-        'data': {
-            'name': model_result['result'],
+        'visualization': {
             'ratio': None,
-            'visualize': None
+            'img': None
         },
         'message': message,
         'search_str': f"{model_result['result']} {category} {location['address_name']}",
