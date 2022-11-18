@@ -109,7 +109,7 @@ def api_v1_insert_detection(
     message = [
         {'sender': 'bot', 'content': '안녕하세요! 세스코입니다.'},
     ]
-    if model_result['result'][-2:] == "정상":
+    if model_result['result']['name'][-2:] == "정상":
         message.append(
             {'sender': 'bot', 'content': '감지된 병해충이 없습니다.'}
         )
@@ -117,7 +117,7 @@ def api_v1_insert_detection(
         message.append(
             {
                 'sender': 'bot',
-                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']}\"이 감지되었습니다."
+                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']['name']}\"이 감지되었습니다."
             }
         )
 
@@ -131,7 +131,7 @@ def api_v1_insert_detection(
         'location': location,
         'result': model_result['result'],
         'message': message,
-        'search_str': f"{model_result['result']} {category} {location}",
+        'search_str': f"{model_result['result']['name']} {category} {location['address_name']}",
     }
     
     detection_model.insert_detection(detection_info)
