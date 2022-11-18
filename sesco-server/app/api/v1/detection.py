@@ -4,7 +4,7 @@ from uuid import uuid4
 from flask import g, current_app
 from flask_validation_extended import Json, Route, Query, File
 from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
-from app.api.response import response_200, created, forbidden, no_content
+from app.api.response import response_200, created, forbidden, no_content, not_found
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
@@ -96,6 +96,7 @@ def api_v1_insert_detection(
 
     user = user_model.get_userinfo(g.user_oid)
 
+    # model_result에는 '작물 정상' 또는 '작물 병해충 이름'으로 들어온다.
     model_result = requests.get(
         headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
         url=f"{config.AI_SERVER_DOMAIN}/api/v1/predict"
@@ -109,7 +110,7 @@ def api_v1_insert_detection(
     message = [
         {'sender': 'bot', 'content': '안녕하세요! 세스코입니다.'},
     ]
-    if model_result['result']['name'][-2:] == "정상":
+    if model_result['result'][-2:] == "정상":
         message.append(
             {'sender': 'bot', 'content': '감지된 병해충이 없습니다.'}
         )
@@ -117,7 +118,7 @@ def api_v1_insert_detection(
         message.append(
             {
                 'sender': 'bot',
-                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']['name']}\"이 감지되었습니다."
+                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']}\"이 감지되었습니다."
             }
         )
 
@@ -125,13 +126,17 @@ def api_v1_insert_detection(
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
-        'name': "*****************************************model_result_title_name*****************************************",
+        'name': model_result['result']['name'],
         'img': img,
         'category': category,
         'location': location,
-        'result': model_result['result'],
+        'data': {
+            'name': model_result['result'],
+            'ratio': None,
+            'visualize': None
+        },
         'message': message,
-        'search_str': f"{model_result['result']['name']} {category} {location['address_name']}",
+        'search_str': f"{model_result['result']} {category} {location['address_name']}",
     }
     
     detection_model.insert_detection(detection_info)
@@ -142,25 +147,48 @@ def api_v1_insert_detection(
         detection_info
     )
 
-'''
-@api.delete('/detection/<detection_id>')
+
+@api.get('/detection/visualize/<detection_id>')
 @timer
 @login_required
 @Validator(bad_request)
-def api_v1_delete_detection(
+def api_v1_get_visualize(
     detection_id=Route(str, rules=ObjectIdValid())
 ):
-    """탐지기록 삭제 API"""
+    """탐지 시각화 자료 반환 API"""
     detection_model = Detection(current_app.db)
 
     detection = detection_model.get_detection_one(ObjectId(detection_id))
+    if detection is None:
+        return not_found
+    
     if detection['user_id'] != g.user_oid:
         return forbidden("No permission")
+    
+    # 이미 ratio, visualize가 존재하는 경우 -> 탐지기록 바로 반환
+    if detection['data']['ratio'] != None and detection['data']['visualize'] != None:
+        del detection['search_str']
+        return detection
 
-    detection_model.delete_detection(ObjectId(detection_id))
+    # ratio, visualize 중 하나라도 None일 경우 -> AI server에 요청
+    model_result = requests.get(
+        headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
+        url=f"{config.AI_SERVER_DOMAIN}/api/v1/visualize"
+        f"?category={detection['data']['category']}"
+        f"&img={detection['data']['img']}"
+        f"&disease={detection['data']['name']}"
+    )
 
-    return no_content
-'''
+    result = {
+        '_id': ObjectId(detection_id),
+        'ratio': model_result['result']['ratio'],
+        'visualize': model_result['result']['visualize']
+    }
+
+    detection_model.update_one(result)
+
+    return result
+
 
 @api.get("/detection/solution")
 @timer
