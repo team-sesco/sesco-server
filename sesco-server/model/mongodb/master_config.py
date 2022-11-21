@@ -1,6 +1,6 @@
 from datetime import datetime
 from .base import Model
-
+import json
 
 class MasterConfig(Model):
 
@@ -57,4 +57,13 @@ class MasterConfig(Model):
         """get config"""
         return self.col.find_one(
             {'key': key}
+        )
+    
+    def insert_solutions(self):
+        with open('model/json/test.json', 'rt', encoding='UTF8') as f:
+            data = json.load(f)
+        self.col.update_one(
+            { 'key': 'pest_dict' },
+            { '$set': data },
+            upsert=True
         )

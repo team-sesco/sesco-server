@@ -9,7 +9,7 @@ from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
 from controller.util import remove_none_value
 from controller.file_util import upload_to_s3
-from model.mongodb import User, Detection
+from model.mongodb import User, Detection, Post, Help
 from . import api_v1 as api
 
 
@@ -35,9 +35,21 @@ def api_v1_update_users_me(
 ):
     """내 정보 갱신 API"""
     new_info = remove_none_value(locals())
+
+    # 유저 정보 갱신
     User(current_app.db).update_user(g.user_oid, new_info)
 
-    # TODO: 캐싱된 모든 곳 갱신해야 함
+    # 캐싱 정보 갱신
+    new_info = remove_none_value({
+        "user_name": new_info.get('name', None),
+        'user_img': new_info.get('img', None) 
+    })
+    for col in [Post, Detection, Help]:
+        col(current_app.db).update_user(
+            g.user_oid,
+            new_info
+        )
+
     return created
 
 

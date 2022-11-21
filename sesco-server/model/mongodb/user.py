@@ -24,7 +24,7 @@ class User(Model):
             'img': None,
             'auth_type': "origin",
             'last_access_date': datetime.now(),
-            'firebase_token': None,
+            'device_token': None,
             'is_deleted': False,
             'bookmarks': [],
             'created_at': datetime.now(),

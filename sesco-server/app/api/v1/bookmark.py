@@ -51,7 +51,7 @@ def api_v1_insert_bookmark(
             "detection_id": detection['_id'],
             "detection_name": detection['name'],
             "detection_location": detection['location'],
-            "detection_result": detection['result']
+            "detection_result": detection['model_predict']
         }
     )
     return created

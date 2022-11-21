@@ -24,7 +24,7 @@ class Detection(Model):
             'img': None,
             'category': None,
             'location': None,
-            'result': None,
+            'model_predict': None,
             'message': None,
             'search_str': None,
             'is_deleted': False,
@@ -70,8 +70,19 @@ class Detection(Model):
             {'search_str': {'$regex': search_str}}
         ))
 
-    def update_one(self, document: dict):
+    def upsert_one(self, document: dict):
         return self.col.update_one(
             {'_id': document['_id']},
-            {'$set': document}
+            {'$set': document},
+            upsert=True
+        )
+
+    def update_user(self, user_oid: ObjectId, document: dict):
+        """user 정보 갱신 쿼리"""
+        return self.col.update_many(
+            {'user_id': user_oid},
+            {'$set': {
+                **document,
+                'updated_at': datetime.now(),
+            }}
         )
