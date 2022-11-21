@@ -58,9 +58,9 @@ def api_v1_insert_post(
     post_model.insert_post({
         'name': name,
         'content': content,
-        'author_id': user['_id'],
-        'author_name': user['name'],
-        'author_img': user['img'],
+        'user_id': user['_id'],
+        'user_name': user['name'],
+        'user_img': user['img'],
         'type': type
     })
 
@@ -84,7 +84,7 @@ def api_v1_update_post(
     post_model = Post(current_app.db)
 
     post = post_model.get_post_one(ObjectId(post_oid))
-    if post['author_id'] != g.user_oid:
+    if post['user_id'] != g.user_oid:
         return forbidden("No permission")
 
     post_model.update_post(ObjectId(post_oid), new_info)
@@ -104,7 +104,7 @@ def api_v1_delete_post(
     post = post_model.get_post_one(ObjectId(post_oid))
     if not post:
         return bad_request("No post")
-    if post['author_id'] != g.user_oid:
+    if post['user_id'] != g.user_oid:
         return forbidden("No permission")
     post_model.delete_post(ObjectId(post_oid))
 

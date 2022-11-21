@@ -1,6 +1,6 @@
 from flask import current_app
 from flask_jwt_extended import create_access_token, create_refresh_token
-from flask_validation_extended import Validator, Json
+from flask_validation_extended import Validator, Json, MinLen
 from app.api.response import bad_request, response_200, unauthorized
 from app.api.decorator import timer
 from controller.auth.kakao import get_userinfo
@@ -12,7 +12,8 @@ from . import api_auth as api
 @Validator(bad_request)
 @timer
 def kakao_oauth_api(
-    access_token=Json(str)
+    access_token=Json(str, rules=MinLen(1)),
+    device_token=Json(str, rules=MinLen(1))
 ):
     """카카오 Oauth 검증"""
 
@@ -37,11 +38,11 @@ def kakao_oauth_api(
         document = {
             'id': f"kakao_{kakao_user['id']}",
             'name': f"kakao_{kakao_user['id']}",
-            'auth_type': 'kakao'
+            'auth_type': 'kakao',
+            'device_token': device_token
         }
         user_oid = model.insert_user(document).inserted_id
 
     return response_200({
         'access_token': create_access_token(identity=user_oid),
-        'refresh_token': create_refresh_token(identity=user_oid),
     })

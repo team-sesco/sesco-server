@@ -81,11 +81,11 @@ def api_v1_post_detection_photo(
     )
 
 
-@api.post('/detection')
+@api.post('/detection/predict')
 @timer
 @login_required
 @Validator(bad_request)
-def api_v1_insert_detection(
+def api_v1_get_detection_predict(
     img=Json(str, rules=MinLen(1)),
     category=Json(str, rules=MinLen(1)),
     location=Json(dict)
@@ -110,7 +110,7 @@ def api_v1_insert_detection(
     message = [
         {'sender': 'bot', 'content': '안녕하세요! 세스코입니다.'},
     ]
-    if model_result['result'][-2:] == "정상":
+    if model_result['result']['name'][-2:] == "정상":
         message.append(
             {'sender': 'bot', 'content': '감지된 병해충이 없습니다.'}
         )
@@ -118,7 +118,7 @@ def api_v1_insert_detection(
         message.append(
             {
                 'sender': 'bot',
-                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']}\"이 감지되었습니다."
+                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']['name']}\"이 감지되었습니다."
             }
         )
 
@@ -126,67 +126,69 @@ def api_v1_insert_detection(
         'user_name': user['name'],
         'user_img': user['img'],
         'user_id': user['_id'],
-        'name': model_result['result'],
         'img': img,
         'category': category,
         'location': location,
-        'visualization': {
-            'ratio': None,
+        'model_predict': {
+            'name': model_result['result']['name'],
+            'ratio': model_result['result']['ratio'],
             'img': None
         },
         'message': message,
-        'search_str': f"{model_result['result']} {category} {location['address_name']}",
+        'search_str': f"{model_result['result']['name']} {category} {location['address_name']}",
     }
     
-    detection_model.insert_detection(detection_info)
-    del detection_info['search_str']
-    detection_info['created_at'] = datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분")
+    detection_oid = detection_model.insert_detection(detection_info).inserted_id
 
     return response_200(
-        detection_info
+        {
+            'message': message,
+            'name': model_result['result']['name'],
+            'created_at': datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분"),
+            'location': location,
+            'detection_oid': detection_oid            
+        }
     )
-
-
-@api.get('/detection/visualize/<detection_id>')
+@api.post('/detection/visualize/<detection_oid>')
 @timer
 @login_required
 @Validator(bad_request)
-def api_v1_get_visualize(
-    detection_id=Route(str, rules=ObjectIdValid())
+def api_v1_visualize(
+    img=Json(str, rules=MinLen(1)),
+    category=Json(str, rules=MinLen(1)),
+    disease=Json(str, rules=MinLen(1)),
+    detection_oid: str = Route(str, rules=ObjectIdValid())
 ):
-    """탐지 시각화 자료 반환 API"""
     detection_model = Detection(current_app.db)
+    detection = detection_model.get_detection_one(ObjectId(detection_oid))
 
-    detection = detection_model.get_detection_one(ObjectId(detection_id))
-    if detection is None:
-        return not_found
-    
-    if detection['user_id'] != g.user_oid:
-        return forbidden("No permission")
-    
-    # 이미 ratio, visualize가 존재하는 경우 -> 탐지기록 바로 반환
-    if detection['data']['ratio'] != None and detection['data']['visualize'] != None:
-        del detection['search_str']
-        return detection
+    if detection['model_predict']['img'] is None:
+        model_result = requests.get(
+            headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
+            url=f"{config.AI_SERVER_DOMAIN}/api/v1/visualization"
+            f"?category={category}"
+            f"&img={img}"
+            f"&disease={disease}"
+        )
 
-    # ratio, visualize 중 하나라도 None일 경우 -> AI server에 요청
-    model_result = requests.get(
-        headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
-        url=f"{config.AI_SERVER_DOMAIN}/api/v1/visualize"
-        f"?category={detection['data']['category']}"
-        f"&img={detection['data']['img']}"
-        f"&disease={detection['data']['name']}"
+        if model_result.status_code != 200:
+            return bad_request(model_result.json()['description'])
+        model_result = model_result.json()
+        visualization_img = model_result['result']
+        update_detection = {
+            '_id': ObjectId(detection_oid),
+            'model_predict.img': visualization_img
+        }
+        detection_model.upsert_one(
+            update_detection
+        )
+    
+    return response_200(
+        {
+            'ratio': detection['model_predict']['ratio'],
+            'visualization': visualization_img
+        }
     )
-
-    result = {
-        '_id': ObjectId(detection_id),
-        'ratio': model_result['result']['ratio'],
-        'visualize': model_result['result']['visualize']
-    }
-
-    detection_model.update_one(result)
-
-    return result
 
 
 @api.get("/detection/solution")

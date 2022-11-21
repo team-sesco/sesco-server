@@ -111,8 +111,8 @@ env.bak/
 venv.bak/
 wslvenv/
 wslvenv
-winvenv/
-winvenv
+.winvenv/
+.winvenv
 
 
 # Spyder project settings

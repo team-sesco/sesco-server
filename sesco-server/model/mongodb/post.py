@@ -16,9 +16,9 @@ class Post(Model):
     def schema(self) -> dict:
         return {
             'name': None,
-            'author_id': None,
-            'author_name': None,
-            'author_img': None,
+            'user_id': None,
+            'user_name': None,
+            'user_img': None,
             'files': None,
             'type': None,
             'content': None,
@@ -52,4 +52,14 @@ class Post(Model):
     def delete_post(self, post_oid: ObjectId):
         return self.col.delete_one(
             {'_id': post_oid}
+        )
+
+    def update_user(self, user_oid: ObjectId, document: dict):
+        """user 정보 갱신 쿼리"""
+        return self.col.update_many(
+            {'user_id': user_oid},
+            {'$set': {
+                **document,
+                'updated_at': datetime.now(),
+            }}
         )
