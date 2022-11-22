@@ -15,7 +15,7 @@ from datetime import datetime
 from . import api_v1 as api
 
 
-@api.get("/detection")
+@api.get('/detection')
 @timer
 @login_required
 @Validator(bad_request)
@@ -85,7 +85,7 @@ def api_v1_post_detection_photo(
 @timer
 @login_required
 @Validator(bad_request)
-def api_v1_get_detection_predict(
+def api_v1_insert_detection(
     img=Json(str, rules=MinLen(1)),
     category=Json(str, rules=MinLen(1)),
     location=Json(dict)
@@ -96,7 +96,6 @@ def api_v1_get_detection_predict(
 
     user = user_model.get_userinfo(g.user_oid)
 
-    # model_result에는 '작물 정상' 또는 '작물 병해충 이름'으로 들어온다.
     model_result = requests.get(
         headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
         url=f"{config.AI_SERVER_DOMAIN}/api/v1/predict"
@@ -107,21 +106,7 @@ def api_v1_get_detection_predict(
         return bad_request(model_result.json()['description'])
     model_result = model_result.json()
 
-    message = [
-        {'sender': 'bot', 'content': '안녕하세요! 세스코입니다.'},
-    ]
-    if model_result['result']['name'][-2:] == "정상":
-        message.append(
-            {'sender': 'bot', 'content': '감지된 병해충이 없습니다.'}
-        )
-    else:
-        message.append(
-            {
-                'sender': 'bot',
-                'content': f"{user['name']}님의 작물에서, 병해충 \"{model_result['result']['name']}\"이 감지되었습니다."
-            }
-        )
-
+    print(model_result['result'])
     detection_info = {
         'user_name': user['name'],
         'user_img': user['img'],
@@ -129,12 +114,12 @@ def api_v1_get_detection_predict(
         'img': img,
         'category': category,
         'location': location,
-        'model_predict': {
+        'model_result': {
             'name': model_result['result']['name'],
             'ratio': model_result['result']['ratio'],
-            'img': None
+            'img': None,
+            'unidentified': True if model_result['result']['check'] == "미확인" else False
         },
-        'message': message,
         'search_str': f"{model_result['result']['name']} {category} {location['address_name']}",
     }
     
@@ -142,13 +127,16 @@ def api_v1_get_detection_predict(
 
     return response_200(
         {
-            'message': message,
-            'name': model_result['result']['name'],
+            'model_result': {
+                'name': detection_info['model_result']['name'],
+                'unidentified': detection_info['model_result']['unidentified']
+            },
             'created_at': datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분"),
-            'location': location,
+            'location': detection_info['location']['address_name'],
             'detection_oid': detection_oid            
         }
     )
+
 @api.post('/detection/visualize/<detection_oid>')
 @timer
 @login_required
@@ -189,7 +177,6 @@ def api_v1_visualize(
             'visualization': visualization_img
         }
     )
-
 
 @api.get("/detection/solution")
 @timer
