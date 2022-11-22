@@ -150,7 +150,7 @@ def api_v1_visualize(
     detection_model = Detection(current_app.db)
     detection = detection_model.get_detection_one(ObjectId(detection_oid))
 
-    if detection['model_predict']['img'] is None:
+    if detection['model_result']['img'] is None:
         model_result = requests.get(
             headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
             url=f"{config.AI_SERVER_DOMAIN}/api/v1/visualization"
