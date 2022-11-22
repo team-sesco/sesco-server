@@ -173,7 +173,7 @@ def api_v1_visualize(
     
     return response_200(
         {
-            'ratio': detection['model_predict']['ratio'],
+            'ratio': detection['model_result']['ratio'],
             'visualization': visualization_img
         }
     )
