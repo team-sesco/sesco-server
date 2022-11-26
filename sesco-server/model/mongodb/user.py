@@ -1,5 +1,5 @@
 from datetime import datetime
-from pymongo import IndexModel, ASCENDING
+from pymongo import IndexModel, ASCENDING, DESCENDING
 from bson.objectid import ObjectId
 from .base import Model
 
@@ -87,13 +87,14 @@ class User(Model):
             }}
         )
          
-    def get_bookmarks(self, user_oid: ObjectId):
+    def get_bookmarks(self, user_oid: ObjectId, limit: int):
         """
         북마크 반환
         """
+
         return self.col.find_one(
             {'_id': user_oid},
-            {'bookmarks': 1}
+            {'bookmarks': {'$slice': -1 * limit} if limit else 1 }
         )
     
     def get_user_by_bookmark(self, user_oid: ObjectId, detection_id: ObjectId) -> bool:

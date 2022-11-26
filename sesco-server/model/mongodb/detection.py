@@ -26,6 +26,7 @@ class Detection(Model):
             'model_result': None,
             'search_str': None,
             'is_deleted': False,
+            'is_detected': False,
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -83,4 +84,21 @@ class Detection(Model):
                 **document,
                 'updated_at': datetime.now(),
             }}
+        )
+
+    def get_detection_by_location(self, location:dict):
+        """
+        지역(location)을 받아 그 지역에 있는 탐지
+        """
+        return list(self.col.find(
+            {
+                'location.region_3depth_name': location.get('region_3depth_name'),
+                'is_detected': True
+            },
+            {
+                'model_result.name': 1,
+                'location.x': 1,
+                'location.y': 1,
+                'img': 1
+            })
         )

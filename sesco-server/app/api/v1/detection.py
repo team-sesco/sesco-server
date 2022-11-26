@@ -102,11 +102,11 @@ def api_v1_insert_detection(
         f"?category={category}"
         f"&img={img}"
     )
+
     if model_result.status_code != 200:
         return bad_request(model_result.json()['description'])
     model_result = model_result.json()
 
-    print(model_result['result'])
     detection_info = {
         'user_name': user['name'],
         'user_img': user['img'],
@@ -120,6 +120,7 @@ def api_v1_insert_detection(
             'img': None,
             'unidentified': True if model_result['result']['check'] == "미확인" else False
         },
+        'is_detected': False if model_result['result']['name'][-2:] == "정상" else True,
         'search_str': f"{model_result['result']['name']} {category} {location['address_name']}",
     }
     
@@ -131,6 +132,7 @@ def api_v1_insert_detection(
                 'name': detection_info['model_result']['name'],
                 'unidentified': detection_info['model_result']['unidentified']
             },
+            'user_name': detection_info['user_name'],
             'created_at': datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분"),
             'location': detection_info['location']['address_name'],
             'detection_oid': detection_oid            
@@ -174,7 +176,8 @@ def api_v1_visualize(
     return response_200(
         {
             'ratio': detection['model_result']['ratio'],
-            'visualization': visualization_img
+            'visualization': visualization_img,
+            'location': detection['location'],
         }
     )
 
@@ -185,10 +188,20 @@ def api_v1_visualize(
 def api_v1_get_solution(
     disease=Query(str, rules=MinLen(1))
 ):
+    disease = disease.replace('_', ' ')
     """대처 방안 반환 API"""
-    model = MasterConfig(current_app.db)
-    result = model.get_value('pest_dict')
-    return response_200(result['value'][disease])
+    return response_200(g.get('pest_dict')[disease])
+
+@api.get("/detection/map")
+@timer
+@login_required
+@Validator(bad_request)
+def api_v1_get_detection_by_location(
+    location=Json(dict),
+):
+    model = Detection(current_app.db)
+    return response_200(model.get_detection_by_location(location))
+    
 
 
 @api.get("/search")

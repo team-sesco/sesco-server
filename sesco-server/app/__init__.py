@@ -1,9 +1,10 @@
 """
 Application Factory Module
 """
+import json
 from datetime import datetime
 from config import config
-from flask import Flask, current_app
+from flask import Flask, current_app, g
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
 from flask_jwt_extended import JWTManager
@@ -11,7 +12,6 @@ from flask_cors import CORS
 from app import api
 from controller.s3 import S3Controller
 from model import register_connection_pool
-from model.mongodb import MasterConfig
 from app.api.template import template as template_bp
 from app.api.error_handler import error_handler as error_bp
 from app.api.v1 import api_v1 as api_v1_bp
@@ -50,7 +50,7 @@ def create_sesco_app(config):
         bucket_name=config.S3_BUCKET_NAME,
         bucket_domain=config.S3_DOMAIN,
     )
-    MasterConfig(app.db).insert_solutions()
+    
 
     app.register_blueprint(error_bp)
     app.register_blueprint(template_bp)
