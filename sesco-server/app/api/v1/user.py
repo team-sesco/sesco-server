@@ -3,7 +3,7 @@ from flask import g, current_app
 from flask_validation_extended import Json, Route, File
 from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
 from bson.objectid import ObjectId
-from app.api.response import response_200, created
+from app.api.response import response_200, created, no_content
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
@@ -89,3 +89,11 @@ def api_v1_get_user(
     return response_200(
         result
     )
+
+@api.delete("/users/me")
+@timer
+@login_required
+def api_v1_delete_user():
+    User(current_app.db).delete_user(g.user_oid)
+    """회원 탈퇴 반환 API"""
+    return no_content

@@ -67,6 +67,10 @@ class User(Model):
             }
         )
 
+    def delete_user(self, user_oid: ObjectId):
+        self.col.delete_one({'_id': user_oid})
+        
+
     def update_user(self, user_oid: ObjectId, document: dict):
         """user 정보 갱신 쿼리"""
         return self.col.update_one(
@@ -97,18 +101,18 @@ class User(Model):
             {'bookmarks': {'$slice': -1 * limit} if limit else 1 }
         )
     
-    def get_user_by_bookmark(self, user_oid: ObjectId, detection_id: ObjectId) -> bool:
+    def get_user_by_bookmark(self, user_oid: ObjectId, detection_id: ObjectId) -> list:
         """
         user_oid에 해당하는 북마크에 detection_id가 있는지 확인
         존재할 경우 True
         존재하지 않을 경우 False
         """
-        return list(self.col.find(
+        return self.col.find_one(
             {
                 "_id": user_oid,
                 "bookmarks.detection_id": {"$in": [detection_id]}
             }
-        ))
+        )
 
     def upsert_bookmarks(self, user_oid: ObjectId, document: dict):
         """북마크 업설트"""
@@ -124,3 +128,5 @@ class User(Model):
             {'_id': user_oid},
             {'$pull': {'bookmarks': {'detection_id': detection_oid}}}
         )
+
+    

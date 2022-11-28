@@ -14,6 +14,7 @@ from . import api_auth as api
 
 @api.post('/signin')
 @Validator(bad_request)
+@timer
 def auth_signin_api(
     id=Json(str, rules=MinLen(5)),
     pw=Json(str, rules=MinLen(8))
@@ -33,6 +34,7 @@ def auth_signin_api(
 
 @api.post('/signup')
 @Validator(bad_request)
+@timer
 def auth_signup_api(
     id=Json(str, rules=MinLen(5)),
     pw=Json(str, rules=MinLen(8)),

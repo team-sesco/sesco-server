@@ -21,10 +21,10 @@ def api_v1_get_bookmarks(
     model = User(current_app.db)
 
     return response_200(
-        model.get_bookmarks(
+        list(reversed(model.get_bookmarks(
             g.user_oid, limit
         )['bookmarks']
-    )
+    )))
 
 
 @api.put('/bookmarks/<detection_oid>')

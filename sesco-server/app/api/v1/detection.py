@@ -13,7 +13,7 @@ from model.mongodb import User, Detection, MasterConfig
 from config import config
 from datetime import datetime
 from . import api_v1 as api
-
+from time import time
 
 @api.get('/detection')
 @timer
@@ -49,10 +49,14 @@ def api_v1_get_detection_one(
 ):
     """탐지 기록 단일 조회 API"""
     model = Detection(current_app.db)
+    user_model = User(current_app.db)
     result = model.get_detection_one(ObjectId(detection_oid))
+    exist = user_model.get_user_by_bookmark(g.user_oid, ObjectId(detection_oid))
+    if result is None:
+        return forbidden
     result['created_at'] = result['created_at'].strftime("%Y년 %m월 %d일 %H시 %M분")
     del result['search_str']
-
+    result['is_bookmarked'] = False if exist is None else True
     return response_200(
         result
     )
@@ -95,14 +99,14 @@ def api_v1_insert_detection(
     detection_model = Detection(current_app.db)
 
     user = user_model.get_userinfo(g.user_oid)
-
+    s = time()
     model_result = requests.get(
         headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
         url=f"{config.AI_SERVER_DOMAIN}/api/v1/predict"
         f"?category={category}"
         f"&img={img}"
     )
-
+    print(f"AI response까지 : {time() - s}")
     if model_result.status_code != 200:
         return bad_request(model_result.json()['description'])
     model_result = model_result.json()
@@ -152,6 +156,9 @@ def api_v1_visualize(
     detection_model = Detection(current_app.db)
     detection = detection_model.get_detection_one(ObjectId(detection_oid))
 
+    if detection is None:
+        return forbidden("")
+
     if detection['model_result']['img'] is None:
         model_result = requests.get(
             headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
@@ -167,7 +174,7 @@ def api_v1_visualize(
         visualization_img = model_result['result']
         update_detection = {
             '_id': ObjectId(detection_oid),
-            'model_predict.img': visualization_img
+            'model_result.img': visualization_img
         }
         detection_model.upsert_one(
             update_detection

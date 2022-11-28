@@ -11,6 +11,7 @@ from . import api_admin as api
 
 @api.post('/auth/sign-in')
 @Validator(bad_request)
+@timer
 def admin_auth_signin_api(
     id=Json(str, rules=MinLen(5)),
     pw=Json(str, rules=MinLen(5))
