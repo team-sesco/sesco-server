@@ -37,20 +37,15 @@ class Notification(Model):
 
     def get_notifications(self, skip: int, limit: int):
         return list((
-            self.col.find()
+            self.col.find({'type': "공지사항"})
             .sort('updated_at', DESCENDING)
             .skip(skip)
             .limit(limit)
         ))
 
-    def get_type_notifications(self, user_oid: ObjectId, skip: int, limit: int, type: str):
+    def get_user_notifications(self, user_oid: ObjectId, skip: int, limit: int):
         return list((
-            self.col.find(
-                {
-                    'user_id': user_oid,
-                    'type': type
-                }
-            )
+            self.col.find({'user_id': user_oid,})
             .sort('updated_at', DESCENDING)
             .skip(skip)
             .limit(limit)
