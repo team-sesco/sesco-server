@@ -3,15 +3,15 @@ from bson import ObjectId
 from uuid import uuid4
 from flask import g, current_app
 from flask_validation_extended import Json, Route, Query, File
-from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
+from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount, Min
 from app.api.response import response_200, created, forbidden, no_content, not_found
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
 from controller.file_util import upload_to_s3
-from model.mongodb import User, Detection, MasterConfig
+from model.mongodb import User, Detection, Notification
 from config import config
-from datetime import datetime
+from datetime import datetime, timedelta
 from . import api_v1 as api
 from time import time
 
@@ -99,14 +99,13 @@ def api_v1_insert_detection(
     detection_model = Detection(current_app.db)
 
     user = user_model.get_userinfo(g.user_oid)
-    s = time()
+
     model_result = requests.get(
         headers={"SESCO-API-KEY": config.AI_SERVER_API_KEY},
         url=f"{config.AI_SERVER_DOMAIN}/api/v1/predict"
         f"?category={category}"
         f"&img={img}"
     )
-    print(f"AI response까지 : {time() - s}")
     if model_result.status_code != 200:
         return bad_request(model_result.json()['description'])
     model_result = model_result.json()
@@ -130,6 +129,16 @@ def api_v1_insert_detection(
     
     detection_oid = detection_model.insert_detection(detection_info).inserted_id
 
+    if detection_info['is_detected']:
+        notification_model = Notification(current_app.db)
+        notification_model.insert_notification({
+            'user_id': g.user_oid,
+            'user_device_token': user['device_token'],
+            'content': f"{location['address_name']}에서 {model_result['result']['name']}이 탐지되었습니다.",
+            'type': "Detection"
+        })
+
+
     return response_200(
         {
             'model_result': {
@@ -139,7 +148,8 @@ def api_v1_insert_detection(
             'user_name': detection_info['user_name'],
             'created_at': datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분"),
             'location': detection_info['location']['address_name'],
-            'detection_oid': detection_oid            
+            'detection_oid': detection_oid,
+            'is_detected': detection_info['is_detected']
         }
     )
 
@@ -199,19 +209,22 @@ def api_v1_get_solution(
     """대처 방안 반환 API"""
     return response_200(g.get('pest_dict')[disease])
 
-@api.get("/detection/map")
+@api.post("/detection/map")
 @timer
 @login_required
 @Validator(bad_request)
 def api_v1_get_detection_by_location(
     location=Json(dict),
 ):
+    print(f'들어온 location = {location}')
     model = Detection(current_app.db)
-    return response_200(model.get_detection_by_location(location))
+    result = model.get_detection_by_location(location)
+    print(f'가져온 데이터 = {result}')
+    return response_200(result)
     
 
 
-@api.get("/search")
+@api.post("/search")
 @timer
 @login_required
 @Validator(bad_request)
@@ -224,3 +237,23 @@ def api_v1_search(
     return response_200(
         model.get_search(search_str)
     )
+
+@api.get("/detection/recent")
+@timer
+@login_required
+@Validator(bad_request)
+def api_v1_recent(
+    time=Query(int, rules=Min(1)),
+    location=Query(str, rules=MinLen(1))
+):
+    now = datetime.now()
+    target_time = now - timedelta(seconds=time)
+    model = Detection(current_app.db)
+    result = model.find_detection_by_gt(location, target_time)
+    if result:
+        return response_200({
+            'is_detected': True
+        })
+    return response_200({
+        'is_detected': False
+    })

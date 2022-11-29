@@ -5,7 +5,8 @@ from flask_validation_extended import Validator, Json, MinLen
 from flask_jwt_extended import create_refresh_token, create_access_token
 from app.api.response import response_200, bad_request, unauthorized
 from app.api.decorator import timer, admin_required
-from config import config
+from datetime import timedelta
+from config import Config
 from . import api_admin as api
 
 
@@ -18,13 +19,13 @@ def admin_auth_signin_api(
 ):
     """로그인"""
     if (
-        id != config.ADMIN_ID
-        or pw != config.ADMIN_PW
+        id != Config.ADMIN_ID
+        or pw != Config.ADMIN_PW
     ):
         return unauthorized("Authentication failed.")
     return response_200({
-        'access_token': create_access_token(id),
-        'refresh_token': create_refresh_token(id)
+        'access_token': create_access_token(id, expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)),
+        'refresh_token': create_refresh_token(id, expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES))
     })
 
 

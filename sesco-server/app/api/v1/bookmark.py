@@ -52,6 +52,7 @@ def api_v1_insert_bookmark(
     model.upsert_bookmarks(
         g.user_oid,
         {
+            "user_name": detection['user_name'],
             "detection_id": detection['_id'],
             "detection_category": detection['category'],
             "detection_location": detection['location'],

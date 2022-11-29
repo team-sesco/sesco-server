@@ -5,6 +5,8 @@ from app.api.response import bad_request, response_200, unauthorized
 from app.api.decorator import timer
 from controller.auth.kakao import get_userinfo
 from model.mongodb import User
+from config import Config
+from datetime import timedelta
 from . import api_auth as api
 
 
@@ -41,8 +43,8 @@ def kakao_oauth_api(
             'auth_type': 'kakao',
             'device_token': device_token
         }
-        user_oid = model.insert_user(document).inserted_id
+        user_oid = model.upsert_user(document).upserted_id
 
     return response_200({
-        'access_token': create_access_token(identity=user_oid),
+        'access_token': create_access_token(identity=user_oid, expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)),
     })

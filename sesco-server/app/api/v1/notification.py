@@ -36,13 +36,15 @@ def api_v1_insert_notification(
 @Validator(bad_request)
 def api_v1_get_notification(
     skip: int = Query(int, default=0, optional=True),
-    limit: int = Query(int, default=0, optional=True)
+    limit: int = Query(int, default=0, optional=True),
+    type: str = Query(str, default="Detection")
+
 ):
     """ 알림 리스트 반환 API"""
     model = Notification(current_app.db)
 
     return response_200(
-        model.get_notifications(skip=skip, limit=limit)
+        model.get_type_notifications(user_oid=g.user_oid, skip=skip, limit=limit, type=type)
     )
 
 

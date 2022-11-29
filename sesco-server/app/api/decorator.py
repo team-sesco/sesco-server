@@ -21,7 +21,6 @@ def timer(func):
         process_time = time()
         result = func(*args, **kwargs)
         g.process_time = time() - process_time
-        print(f"{func.__module__}/{func.__name__} process time : {g.process_time}")
         if current_app.config['DEBUG']:
             if isinstance(result, Response):
                 data = json.loads(result.get_data())

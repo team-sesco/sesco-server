@@ -36,6 +36,13 @@ class User(Model):
         """user 생성 쿼리"""
         return self.col.insert_one(self.schemize(document))
 
+    def upsert_user(self, document: dict):
+        """사용자 업설트"""
+        return self.col.update_one(
+            {'id': document['id']},
+            {'$set': self.schemize(document)},
+            upsert=True
+        )
     def get_password_with_id(self, user_id: str):
         """user_id를 통한 PW 조회 쿼리"""
         return self.col.find_one(
@@ -54,6 +61,10 @@ class User(Model):
         """user 정보 반환 쿼리"""
         return self.col.find_one(
             {'_id': user_oid}
+        )
+    def get_user_by_name(self, user_name: str):
+        return self.col.find_one(
+            {'name': user_name}
         )
 
     def get_userinfo_simple(self, user_oid: ObjectId):

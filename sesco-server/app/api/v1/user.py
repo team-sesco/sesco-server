@@ -1,9 +1,9 @@
 """User 관련 APIs"""
 from flask import g, current_app
 from flask_validation_extended import Json, Route, File
-from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount
+from flask_validation_extended import Validator, MinLen, Ext, MaxFileCount, MaxLen
 from bson.objectid import ObjectId
-from app.api.response import response_200, created, no_content
+from app.api.response import response_200, created, no_content, conflict
 from app.api.response import bad_request
 from app.api.decorator import login_required, timer
 from app.api.validation import ObjectIdValid
@@ -30,11 +30,16 @@ def api_v1_get_users_me():
 @login_required
 @Validator(bad_request)
 def api_v1_update_users_me(
-    name=Json(str, rules=MinLen(1), optional=True),
+    name=Json(str, rules=[MinLen(3), MaxLen(20)], optional=True),
     img=Json(str, rules=MinLen(1), optional=True)
 ):
     """내 정보 갱신 API"""
     new_info = remove_none_value(locals())
+
+    # 닉네임 중복 확인
+    if name is not None:
+        if User(current_app.db).get_user_by_name(name) is not None:
+            return conflict("닉네임이 중복되었습니다.")
 
     # 유저 정보 갱신
     User(current_app.db).update_user(g.user_oid, new_info)
@@ -53,7 +58,7 @@ def api_v1_update_users_me(
     return created
 
 
-@api.put("/users/me/photo")
+@api.post("/users/me/photo")
 @timer
 @login_required
 @Validator(bad_request)
@@ -95,5 +100,6 @@ def api_v1_get_user(
 @login_required
 def api_v1_delete_user():
     User(current_app.db).delete_user(g.user_oid)
-    """회원 탈퇴 반환 API"""
+    Detection(current_app.db).delete_detection_all(g.user_oid)
+    """회원 탈퇴 API"""
     return no_content
