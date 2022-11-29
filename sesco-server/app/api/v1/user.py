@@ -43,6 +43,9 @@ def api_v1_update_users_me(
 
     # 유저 정보 갱신
     User(current_app.db).update_user(g.user_oid, new_info)
+    # TODO: 모든 유저의 북마크에 대해, 유저의 닉네임을 변경해야한다.
+
+
 
     # 캐싱 정보 갱신
     new_info = remove_none_value({

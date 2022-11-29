@@ -53,7 +53,7 @@ def api_v1_get_detection_one(
     result = model.get_detection_one(ObjectId(detection_oid))
     exist = user_model.get_user_by_bookmark(g.user_oid, ObjectId(detection_oid))
     if result is None:
-        return forbidden
+        return forbidden("No Permission")
     result['created_at'] = result['created_at'].strftime("%Y년 %m월 %d일 %H시 %M분")
     del result['search_str']
     result['is_bookmarked'] = False if exist is None else True
@@ -167,7 +167,7 @@ def api_v1_visualize(
     detection = detection_model.get_detection_one(ObjectId(detection_oid))
 
     if detection is None:
-        return forbidden("")
+        return forbidden("No Permission")
 
     if detection['model_result']['img'] is None:
         model_result = requests.get(

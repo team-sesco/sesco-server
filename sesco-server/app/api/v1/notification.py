@@ -62,6 +62,8 @@ def api_v1_get_notification_one(
         model.get_notification_one(ObjectId(notification_oid))
     )
 
+
+
 @api.delete('/notification/<notification_oid>')
 @timer
 @admin_required
