@@ -4,16 +4,19 @@ API Server Base Auth APIs
 from flask import current_app, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_validation_extended import Validator, Json, MinLen
-from flask_jwt_extended import get_jwt_identity, create_refresh_token, create_access_token, jwt_required
+from flask_jwt_extended import (
+    get_jwt_identity, create_refresh_token, create_access_token, jwt_required
+)
 from app.api.response import response_200, bad_request, forbidden, no_content
 from app.api.decorator import timer, login_required
 from model.mongodb import User
 from config import config
 from . import api_auth as api
-
-
+from datetime import timedelta
+from config import Config
 @api.post('/signin')
 @Validator(bad_request)
+@timer
 def auth_signin_api(
     id=Json(str, rules=MinLen(5)),
     pw=Json(str, rules=MinLen(8))
@@ -26,13 +29,20 @@ def auth_signin_api(
         return bad_request("Authentication failed.")
     user_oid = str(user['_id'])
     return response_200({
-        'access_token': create_access_token(user_oid),
-        'refresh_token': create_refresh_token(user_oid)
+        'access_token': create_access_token(
+            user_oid,
+            expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        ),
+        'refresh_token': create_refresh_token(
+            user_oid,
+            expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        )
     })
 
 
 @api.post('/signup')
 @Validator(bad_request)
+@timer
 def auth_signup_api(
     id=Json(str, rules=MinLen(5)),
     pw=Json(str, rules=MinLen(8)),
@@ -53,8 +63,14 @@ def auth_signup_api(
 
     user_oid = str(user_oid)
     return response_200({
-        'access_token': create_access_token(user_oid),
-        'refresh_token': create_refresh_token(user_oid)
+        'access_token': create_access_token(
+            user_oid,
+        expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        ),
+        'refresh_token': create_refresh_token(
+            user_oid,
+            expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        )
     })
 
 
@@ -64,8 +80,14 @@ def auth_token_refresh():
     """JWT 토큰 리프레시"""
     user_oid = get_jwt_identity()
     return response_200({
-        'access_token': create_access_token(identity=user_oid),
-        'refresh_token': create_refresh_token(identity=user_oid),
+        'access_token': create_access_token(
+            identity=user_oid,
+            expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        ),
+        'refresh_token': create_refresh_token(
+            identity=user_oid,
+            expires_delta= timedelta(Config.JWT_ACCESS_TOKEN_EXPIRES)
+        ),
     })
 
 

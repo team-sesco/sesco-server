@@ -2,6 +2,7 @@
 API Main Decorator
 """
 import json
+import inspect
 from functools import wraps
 from time import time
 from flask import current_app, g, Response
@@ -20,7 +21,6 @@ def timer(func):
         process_time = time()
         result = func(*args, **kwargs)
         g.process_time = time() - process_time
-
         if current_app.config['DEBUG']:
             if isinstance(result, Response):
                 data = json.loads(result.get_data())

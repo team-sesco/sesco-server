@@ -4,7 +4,7 @@ from app.api.response import (bad_request, created, forbidden, no_content,
 from app.api.validation import ObjectIdValid
 from bson import ObjectId
 from flask import current_app, g
-from flask_validation_extended import Route, Validator
+from flask_validation_extended import Route, Validator, Query
 from model.mongodb import User, Detection
 
 from . import api_v1 as api
@@ -14,13 +14,17 @@ from . import api_v1 as api
 @timer
 @login_required
 @Validator(bad_request)
-def api_v1_get_bookmarks():
+def api_v1_get_bookmarks(
+    limit: int = Query(int, default=None, optional=True)
+):
     """ 북마크 리스트 반환 API"""
     model = User(current_app.db)
 
     return response_200(
-        model.get_bookmarks(g.user_oid)['bookmarks']
-    )
+        list(reversed(model.get_bookmarks(
+            g.user_oid, limit
+        )['bookmarks']
+    )))
 
 
 @api.put('/bookmarks/<detection_oid>')
@@ -48,10 +52,11 @@ def api_v1_insert_bookmark(
     model.upsert_bookmarks(
         g.user_oid,
         {
+            "user_name": detection['user_name'],
             "detection_id": detection['_id'],
-            "detection_name": detection['name'],
+            "detection_category": detection['category'],
             "detection_location": detection['location'],
-            "detection_result": detection['model_predict']
+            "detection_result": detection['model_result']
         }
     )
     return created

@@ -4,7 +4,7 @@ from flask_validation_extended import Json, Route, Query
 from flask_validation_extended import Validator, MinLen
 from app.api.response import response_200, created, forbidden, no_content
 from app.api.response import bad_request
-from app.api.decorator import login_required, timer
+from app.api.decorator import login_required, timer, admin_required
 from app.api.validation import ObjectIdValid
 from model.mongodb import Notification
 from . import api_v1 as api
@@ -36,13 +36,15 @@ def api_v1_insert_notification(
 @Validator(bad_request)
 def api_v1_get_notification(
     skip: int = Query(int, default=0, optional=True),
-    limit: int = Query(int, default=0, optional=True)
+    limit: int = Query(int, default=0, optional=True),
+    type: str = Query(str, default="Detection")
+
 ):
     """ 알림 리스트 반환 API"""
     model = Notification(current_app.db)
 
     return response_200(
-        model.get_notifications(skip=skip, limit=limit)
+        model.get_type_notifications(user_oid=g.user_oid, skip=skip, limit=limit, type=type)
     )
 
 
@@ -62,7 +64,7 @@ def api_v1_get_notification_one(
 
 @api.delete('/notification/<notification_oid>')
 @timer
-@login_required
+@admin_required
 @Validator(bad_request)
 def api_v1_delete_notification(
     notification_oid=Route(str, rules=ObjectIdValid())

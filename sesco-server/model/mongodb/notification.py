@@ -43,6 +43,19 @@ class Notification(Model):
             .limit(limit)
         ))
 
+    def get_type_notifications(self, user_oid: ObjectId, skip: int, limit: int, type: str):
+        return list((
+            self.col.find(
+                {
+                    'user_id': user_oid,
+                    'type': type
+                }
+            )
+            .sort('updated_at', DESCENDING)
+            .skip(skip)
+            .limit(limit)
+        ))
+
     def delete_notification(self, notification_oid: ObjectId):
         return self.col.delete_one(
             {'_id': notification_oid}

@@ -1,6 +1,7 @@
 """
 API Request Handler and util
 """
+import json
 from flask import Flask, g, current_app, request, Response
 from loguru import logger
 from model.mongodb import Log
@@ -14,7 +15,9 @@ def init_app(app: Flask):
 
     @app.before_request
     def before_request():
-        pass
+        if g.get('pest_dict') is None:
+            with open('model/json/test.json', 'rt', encoding='UTF8') as f:
+                g.pest_dict = json.load(f)
 
     @app.after_request
     def after_request(response):

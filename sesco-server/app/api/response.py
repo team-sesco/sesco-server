@@ -51,3 +51,9 @@ user_blocked = {
     'description': "It's Blocked User.",
     'code': "user-block-exception"
 }, 403
+
+def conflict(description):
+    return {
+        'msg': 'fail',
+        'description': description
+    }, 409

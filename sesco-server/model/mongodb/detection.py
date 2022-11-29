@@ -26,6 +26,7 @@ class Detection(Model):
             'model_result': None,
             'search_str': None,
             'is_deleted': False,
+            'is_detected': False,
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             '__version__': self.VERSION,
@@ -40,14 +41,17 @@ class Detection(Model):
             {'_id': detection_id},
             {'$set': {'is_deleted': True}}
         )
+    def delete_detection_all(self, user_oid: ObjectId):
+        return self.col.delete_many({'user_id': user_oid})
 
+        
     def get_detections(self, user_oid: ObjectId, skip: int, limit: int):
         return list(self.col.find(
             {
                 'user_id': user_oid,
                 'is_deleted': False,
             }
-        ).sort('updated_at', DESCENDING)
+        ).sort('created_at', DESCENDING)
         .skip(skip)
         .limit(limit)
     )
@@ -65,7 +69,10 @@ class Detection(Model):
         검색.
         """
         return list(self.col.find(
-            {'search_str': {'$regex': search_str}}
+            {'search_str': {'$regex': search_str}},
+            {
+                'search_str': 0
+            }
         ))
 
     def upsert_one(self, document: dict):
@@ -84,3 +91,34 @@ class Detection(Model):
                 'updated_at': datetime.now(),
             }}
         )
+
+    def get_detection_by_location(self, location:dict):
+        """
+        지역(location)을 받아 그 지역에 있는 탐지
+        """
+        location_x = float(location.get('x'))
+        location_y = float(location.get('y'))
+        return list(self.col.find(
+            {
+                'location.region_3depth_name': location.get('region_3depth_name'),
+                'is_detected': True,
+                '$and': [
+                    {'location.x': {'$gt': location_x-0.005, '$lt': location_x+0.005}},
+                    {'location.y': {'$gt': location_y-0.005, '$lt': location_y+0.005}},
+                ]
+            },
+            {
+                'model_result.name': 1,
+                'location.x': 1,
+                'location.y': 1,
+                'img': 1
+            })
+        )
+    
+    def find_detection_by_gt(self, location:str, time: datetime):
+        return list(self.col.find(
+            {
+                'created_at': {'$gte': time},
+                'location.region_3depth_name': location
+            }
+        ))
